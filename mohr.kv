@@ -1,0 +1,207 @@
+# Aqui esta a tela principal, onde fica organizada as outras telas
+# Here stay the principal Layout. That layout will organize the others screens
+
+#:import MeshLinePlot kivy.garden.graph.MeshLinePlot
+#=========================TELA PRINCIPAL===============================
+<Principal>
+    #Cor de fundo - Background Color
+    canvas.before:
+        Color:
+            rgba: 0,0,0,1
+        Rectangle:
+            # o 'self' abaixo se refere a 'CalculadoraDeMohr'
+            pos: self.pos
+            size: self.size
+    #Fim da cor de fundo
+    TelaDoPlano:
+        name: 'TelaDoPlano'
+    TelaDoPlanoDeformacao
+        name: 'TelaDoPlanoDeformacao'
+
+#=========================TELA DO PLANO================================
+<TelaDoPlano>
+    BoxLayout:
+        orientation: 'vertical'
+        ActionBar:
+            ActionView:
+                ActionPrevious:
+                    title: 'Plano de Tens\u00e3o'
+                ActionButton:
+                    text: 'Deformacao'
+                    on_release: root.manager.current = 'TelaDoPlanoDeformacao'
+        ScrollView:
+            id: rolagem_TelaDoPlano
+            BoxLayout:
+                orientation:'vertical'
+                size_hint: 1, None
+                height: 250+0.9*root.width if root.width < root.height else 250+0.9*root.height
+                BoxLayout
+                    orientation: 'horizontal'
+                    InserirValores
+                        id: inserirvalor
+                    PlanoDeSaida
+                        id: planodesaida
+                SaidaValores
+                    id: saidavalor
+                WidgetGraficoPlano
+                    size_hint: None,None
+                    width: 0.9*root.width if root.width < root.height else 0.9*root.height
+                    height: self.width
+                    pos: root.center_x, root.center_y
+                    id: grafico1
+
+# ----------------------------------------------------------------------------------
+# Aqui fica a tela onde o usuário irá inserir os valores de entrada do estado plano
+# Here the user insert the enter values
+<InserirValores>
+    cols: 2
+    Label:
+        id: label_tensaoX
+        text: '\u03C3X'
+    TextInput:
+        id: entrada_tensaoX
+        text: ''
+        multiline: False
+        write_tab: False
+    Label:
+        id: label_tensaoY
+        text: '\u03C3Y'
+    TextInput:
+        id: entrada_tensaoY
+        text: ''
+        multiline: False
+        write_tab: False
+    Label:
+        id: label_cisalhante
+        text: '\u03C4'
+    TextInput:
+        id: entrada_cisalhante
+        text: ''
+        multiline: False
+        write_tab: False
+    Label:
+        id: label_angulo
+        text: '\u03b1'
+    TextInput:
+        id: entrada_angulo
+        text: ''
+        multiline: False
+        write_tab: False
+    Button:
+        id: botao_calcular
+        text: 'Calcular'
+        on_press: root.calcular(); app.root.get_screen('TelaDoPlano').ids.saidavalor.imprimir_tensoes(*root.saida);
+        on_release: app.root.get_screen('TelaDoPlano').ids.planodesaida.muda_angulo(root.saida[3]);
+        on_release: app.root.get_screen('TelaDoPlano').ids.grafico1.desenha(root.saida[2], root.saida[6], *root.entrada, root.saida[3])
+    Button:
+        id: botao_limpar
+        text: 'Limpar'
+        on_press: root.limpa(); app.root.get_screen('TelaDoPlano').ids.saidavalor.imprimir_tensoes(*root.saida)
+        on_release: app.root.get_screen('TelaDoPlano').ids.grafico1.limpa_grafico();
+        on_release: app.root.get_screen('TelaDoPlano').ids.planodesaida.muda_angulo(0.0);
+
+# ----------------------------------------------------------------------------------
+# Aqui será mostrado o resultado.
+<SaidaValores>
+    cols: 4
+    rows: 4
+    Label:
+        text: u'\u03C31' # sigma 1 | tensao 1
+    Label:
+        id: resultado_x
+        text: '- MPa'
+        halign: 'right'
+    Label:
+        text: u'\u03B81' # theta 1 | angulo 1
+        color: 1,1,0,1
+    Label:
+        id: resultado_angulo
+        text: u'- \u00B0' # º
+        color: 1,1,0,1
+        halign: 'right'
+    Label:
+        text: u'\u03C32' # sigma 2 | tensao 2
+    Label:
+        id: resultado_y
+        text: '- MPa'
+        halign: 'right'
+    Label:
+        text: u'\u03B82' # theta 2 | angulo 2
+    Label:
+        id: resultado_angulo2
+        text: u'- \u00B0' # º
+        halign: 'right'
+    Label:
+        text: u'\u03C4max'
+    Label:
+        id: resultado_cisalhante
+        text: '- MPa'
+        halign: 'right'
+    Label:
+        text: u'\u03B8s'
+    Label:
+        id: resultado_angulo3
+        text: u'- \u00B0'
+        halign: 'right'
+    Label:
+        text: u'\u03C3med' # sigma med | tensao media
+    Label:
+        id: resultado_med
+        text: '- MPa'
+        halign: 'right'
+
+# ----------------------------------------------------------------------------------
+<PlanoDeSaida@Plano>
+#imagem do Plano De Saida -> imagem_pds
+    id: imagem_pds
+    source: 'Imagens/EstadoPlano.png'
+    canvas.before:
+        PushMatrix
+        Rotate:
+            angle: root.angle
+            origin: self.center
+    canvas.after:
+        PopMatrix
+        Color:
+            rgba: 1,1,0,1
+            # Desenhar os eixos coordenados
+        Color:
+            rgba: 1,1,1,1
+        Line:
+            bezier: (*self.center, self.center_x, self.center_y+0.45*self.height)
+        Line:
+            bezier: (*self.center, self.center_x+0.45*self.height, self.center_y)
+            # Desenho dos angulos.
+        Color:
+            rgba: 1,1,0,1
+        Line:                               #Começa em "90" e vai até "-root.angle+90" negativo pra girar em sentido antihorário e +90 pra compensar o ponto de inicio
+            circle: (*self.center, 0.2*self.height, 90, -root.angle+90) #desenha angulo principal 1.
+# ----------------------------------------------------------------------------------
+<WidgetGraficoPlano@WidgetGrafico>
+    propriedade_grafico: id_do_grafico1
+    Graph:
+        id: id_do_grafico1
+        xlabel: '\u03C3'
+        ylabel: '\u03C4'
+        x_ticks_major: int(root.ymax/2)
+        y_ticks_major: int(root.ymax/2)
+        x_grid_label: True
+        y_grid_label: True
+        padding: 5
+        x_grid: True
+        y_grid: True
+        ymin: root.ymin
+        ymax: root.ymax
+        xmin: root.xmin
+        xmax: root.xmax
+        width: root.width if (root.width < root.height) else root.height
+        height: self.width
+
+#============================TELA DO PLANO DE DEFORMAÇÃO=============================
+<TelaDoPlanoDeformacao>
+    BoxLayout:
+        ActionBar:
+            ActionView:
+                ActionPrevious:
+                    title: 'Estado Plano de Deformação'
+        BoxLayout:
