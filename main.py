@@ -18,18 +18,15 @@ class Principal(ScreenManager):
     pass
 
 
-class TelaDoPlano(Screen):
+class TelaDoPlano(Screen):  # Estado Plano de Tensão
     pass
 
 
-class TelaDoPlanoDeformacao(Screen):
+class TelaDoPlanoDeformacao(Screen):  # Estado Plano de Deformação
     pass
 
 
-class TelaDoGrafico(Screen):
-    pass
-
-
+# ============ Estado Plano de Tensão ============================
 class InserirValores(GridLayout):
     entrada = 0  # armazena os valores do usuário em formato float
     saida = 0  # armazena os resultado dos cálculos
@@ -202,6 +199,16 @@ class WidgetGrafico(Widget):
         self.propriedade_grafico.remove_plot(self.arco_angulo)
 
 
+# =========== Estado Plano de Deformação =====================
+class EntradaPlanoDeformacao(GridLayout):
+    pass
+
+
+class SaidaPlanoDeformacao(GridLayout):
+    pass
+
+
+# ============ Método Principal ===============================
 class Mohr(App):
     def build(self):
         return Principal()

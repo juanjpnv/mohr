@@ -34,7 +34,7 @@
             BoxLayout:
                 orientation:'vertical'
                 size_hint: 1, None
-                height: 250+0.9*root.width if root.width < root.height else 250+0.9*root.height
+                height: 300+0.9*root.width if root.width < root.height else 300+0.9*root.height
                 BoxLayout
                     orientation: 'horizontal'
                     InserirValores
@@ -79,14 +79,7 @@
         text: ''
         multiline: False
         write_tab: False
-    Label:
-        id: label_angulo
-        text: '\u03b1'
-    TextInput:
-        id: entrada_angulo
-        text: ''
-        multiline: False
-        write_tab: False
+
     Button:
         id: botao_calcular
         text: 'Calcular'
@@ -152,7 +145,7 @@
 
 # ----------------------------------------------------------------------------------
 <PlanoDeSaida@Plano>
-#imagem do Plano De Saida -> imagem_pds
+    #imagem do Plano De Saida -> imagem_pds
     id: imagem_pds
     source: 'Imagens/EstadoPlano.png'
     canvas.before:
@@ -197,11 +190,90 @@
         width: root.width if (root.width < root.height) else root.height
         height: self.width
 
-#============================TELA DO PLANO DE DEFORMAÇÃO=============================
+#==================TELA DO PLANO DE DEFORMAÇÃO=========================
 <TelaDoPlanoDeformacao>
     BoxLayout:
+        orientation: 'vertical'
         ActionBar:
             ActionView:
                 ActionPrevious:
                     title: 'Estado Plano de Deformação'
-        BoxLayout:
+                    on_release: root.manager.current = 'TelaDoPlano'
+        EntradaPlanoDeformacao:
+            id: entrada_plano_deformacao
+        SaidaPlanoDeformacao:
+            id: saida_plano_deformacao
+        WidgetGraficoDeformacao:
+            id: grafico_deforma
+
+# ----------------------------------------------------------------------------------
+<EntradaPlanoDeformacao>
+    size_hint: 1, None
+    height: 60
+    rows: 2
+    Label:
+        text: '\u03b5xx' # epsilon x
+    Label:
+        text: '\u03b5yy' # epsilon y
+    Label:
+        text: '\u03b3yx' # gama xy
+    Label:
+        text: '\u03b10' # alpha
+
+    TextInput:
+    TextInput:
+    TextInput:
+    TextInput:
+
+#------------------------------------------------------------------------------------
+<SaidaPlanoDeformacao>
+    rows: 3
+    size_hint: 1, None
+    height: 30*root.rows
+    Label:
+        text: '\u03b51' # epsilon 1
+    Label:
+        text: 'resultado \u03b5xx' # resultado epsilon 1
+    Label:
+        text: '\u03b11' # alpha 1
+    Label:
+        text: 'Resultado \u03b11' # resultado alpha 1
+
+    Label:
+        text: '\u03b52' # epsilon 2
+    Label:
+        text: 'resultado \u03b5yy' # resultado epsilon 2
+    Label:
+        text: '\u03b12' # alpha 2
+    Label:
+        text: 'Resultado \u03b12' # resultado alpha 2
+
+    Label:
+        text: '\u03b3max' # gama max
+    Label:
+        text: 'Resultado \u03b3xy' # resultado gama max
+    Label:
+        text: '\u03b1\u03b3' # alpha gama
+    Label:
+        text: 'Resultado \u03b1\u03b3' # resultado alpha gama
+
+#------------------------------------------------------------------------------------
+<WidgetGraficoDeformacao@WidgetGrafico>
+    propriedade_grafico: id_do_grafico1
+    Graph:
+        id: id_do_grafico1
+        xlabel: '\u03C3'
+        ylabel: '\u03C4'
+        x_ticks_major: int(root.ymax/2)
+        y_ticks_major: int(root.ymax/2)
+        x_grid_label: True
+        y_grid_label: True
+        padding: 5
+        x_grid: True
+        y_grid: True
+        ymin: root.ymin
+        ymax: root.ymax
+        xmin: root.xmin
+        xmax: root.xmax
+        width: root.width if (root.width < root.height) else root.height
+        height: self.width
