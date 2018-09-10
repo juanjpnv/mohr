@@ -18,7 +18,8 @@
     TelaDoPlanoDeformacao
         name: 'TelaDoPlanoDeformacao'
 
-#=========================TELA DO PLANO================================
+
+#=========================== TELA DO PLANO ============================
 <TelaDoPlano>
     BoxLayout:
         orientation: 'vertical'
@@ -190,7 +191,7 @@
         width: root.width if (root.width < root.height) else root.height
         height: self.width
 
-#==================TELA DO PLANO DE DEFORMAÇÃO=========================
+#==================== TELA DO PLANO DE DEFORMAÇÃO =====================
 <TelaDoPlanoDeformacao>
     BoxLayout:
         orientation: 'vertical'
@@ -213,18 +214,35 @@
     rows: 2
     Label:
         text: '\u03b5xx' # epsilon x
+        id: label_ex
     Label:
         text: '\u03b5yy' # epsilon y
+        id: label_ey
     Label:
         text: '\u03b3yx' # gama xy
-    Label:
-        text: '\u03b10' # alpha
+        id: label_gamaxy
+    Button:
+        text: 'Calcular'
+        on_press: root.calcular(); app.root.get_screen('TelaDoPlanoDeformacao').ids.grafico_deforma.desenha(*root.grafico)
+        on_release: app.root.get_screen('TelaDoPlanoDeformacao').ids.saida_plano_deformacao.valores(root.saida)
 
     TextInput:
+        text: ''
+        write_tab: False
+        id: input_ex
     TextInput:
+        text: ''
+        write_tab: False
+        id: input_ey
     TextInput:
-    TextInput:
-
+        text: ''
+        write_tab: False
+        id: input_gamaxy
+    Button:
+        text: 'Limpar'
+        on_press: root.limpar()
+        on_press: app.root.get_screen('TelaDoPlanoDeformacao').ids.grafico_deforma.limpa_grafico()
+        on_press: app.root.get_screen('TelaDoPlanoDeformacao').ids.saida_plano_deformacao.valores(['']*7)
 #------------------------------------------------------------------------------------
 <SaidaPlanoDeformacao>
     rows: 3
@@ -233,29 +251,35 @@
     Label:
         text: '\u03b51' # epsilon 1
     Label:
-        text: 'resultado \u03b5xx' # resultado epsilon 1
+        text: '' # resultado epsilon 1
+        id: label_result_e1
     Label:
         text: '\u03b11' # alpha 1
     Label:
-        text: 'Resultado \u03b11' # resultado alpha 1
+        text: '' # resultado alpha 1
+        id: label_result_alpha1
 
     Label:
         text: '\u03b52' # epsilon 2
     Label:
-        text: 'resultado \u03b5yy' # resultado epsilon 2
+        text: '' # resultado epsilon 2
+        id: label_result_e2
     Label:
         text: '\u03b12' # alpha 2
     Label:
-        text: 'Resultado \u03b12' # resultado alpha 2
+        text: '' # resultado alpha 2
+        id: label_result_alpha2
 
     Label:
         text: '\u03b3max' # gama max
     Label:
-        text: 'Resultado \u03b3xy' # resultado gama max
+        text: '' # resultado gama max
+        id: label_result_gamamax
     Label:
         text: '\u03b1\u03b3' # alpha gama
     Label:
-        text: 'Resultado \u03b1\u03b3' # resultado alpha gama
+        text: '' # resultado alpha gama
+        id: label_result_alphagama
 
 #------------------------------------------------------------------------------------
 <WidgetGraficoDeformacao@WidgetGrafico>
@@ -277,3 +301,6 @@
         xmax: root.xmax
         width: root.width if (root.width < root.height) else root.height
         height: self.width
+
+
+#======================== TELA TENSÃO TRIAXIAL ========================
