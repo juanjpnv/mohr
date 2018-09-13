@@ -1,5 +1,6 @@
 import kivy
 import math
+from grau3 import terceiro_grau
 
 from kivy.app import App
 from kivy.uix.screenmanager import Screen, ScreenManager
@@ -229,7 +230,8 @@ class EntradaPlanoDeformacao(GridLayout):
                       round(alpha1, 3), round(alpha2, 3), round(alphagama, 3)]
 
     def organiza_dados_grafico(self):
-        self.grafico = [self.saida[2]/2, self.saida[3], self.entrada[0], self.entrada[1], self.entrada[2]/2, self.saida[4]]
+        self.grafico = [self.saida[2] / 2, self.saida[3], self.entrada[0], self.entrada[1],
+                        self.entrada[2] / 2, self.saida[4]]
 
     def calcular(self):
         self.pega_valor()
@@ -255,6 +257,65 @@ class SaidaPlanoDeformacao(GridLayout):
 # =============== Estado Triaxial de Tensao ====================
 class TelaTensaoTri(Screen):
     pass
+
+
+class InserirTensaoTri(GridLayout):
+    saida = []
+    entrada = []
+    grafico = []
+
+    def pega_valor(self):
+        sx = float(self.ids.entrada_tensaoX.text)
+        sy = float(self.ids.entrada_tensaoY.text)
+        sz = float(self.ids.entrada_tensaoZ.text)
+        txy = float(self.ids.entrada_cisXY.text)
+        tyz = float(self.ids.entrada_cisYZ.text)
+        tzx = float(self.ids.entrada_cisXZ.text)
+        self.entrada = [sx, sy, sz, txy, tyz, tzx]
+
+    def calcular_principal(self, sx, sy, sz, txy, tyz, tzx):
+        """ Considerando: s -> sigma. t -> tau
+        Esta função recebe:
+        sx: Stress X - sy: Stress Y - sz: Stress Z
+        txy: Shear XY - tyx: Shear YZ - tzx: Shear ZX"""
+        # Coeficientes da equação de terceiro grau
+        a3 = 1
+        a2 = -(sx + sy + sz)
+        a1 = sx * sy + sx * sz + sy * sz - txy ** 2 - tyz ** 2 - tzx ** 2
+        a0 = -(sx * sy * sz + 2 * txy * tyz * tzx - (tyz ** 2) * sx - (tzx ** 2) * sy - (txy ** 2) * sz)
+        # Aplica a resolução da equação e retorna o resultado em ordem crescente:
+        s3, s2, s1 = sorted(terceiro_grau(a3, a2, a1, a0))
+        # Calcula-se os valores dos cisalhamentos maximos
+        t13, t12, t23 = (s1 - s3)/2, (s1 - s2)/2, (s2 - s3)/2
+        # Armazena em forma de lista.
+        self.saida = [s1, s2, s3, t13, t12, t23]
+
+    def organiza_dados_graficos(self, s1, s2, s3, t13, t12, t23):
+        centro1 = (s1 + s3) / 2
+        raio1 = t13
+        centro2 = (s1 + s2) / 2
+        raio2 = t12
+        centro3 = (s2 + s3) / 2
+        raio3 = t23
+        self.grafico = [centro1, raio1, centro2, raio2, centro3, raio3]
+
+    def calcular(self):
+        self.pega_valor()
+        self.calcular_principal(*self.entrada)
+        self.organiza_dados_graficos(*self.saida)
+
+
+class SaidaTensaoTri(GridLayout):
+    def imprime_principais(self, s1, s2, s3, t13, t12, t23):
+        self.ids.label_result_s1.text = str(s1)
+        self.ids.label_result_s2.text = str(s2)
+        self.ids.label_result_s3.text = str(s3)
+        self.ids.label_result_t13.text = str(t13)
+        self.ids.label_result_t12.text = str(t12)
+        self.ids.label_result_t23.text = str(t23)
+
+    def imprime_couchy(self):
+        pass
 
 
 # ============ Método Principal ===============================

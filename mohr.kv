@@ -13,12 +13,12 @@
             pos: self.pos
             size: self.size
     #Fim da cor de fundo
+    TelaTensaoTri:
+        name: 'TelaTensaoTri'
     TelaDoPlano:
         name: 'TelaDoPlano'
     TelaDoPlanoDeformacao
         name: 'TelaDoPlanoDeformacao'
-
-
 #=========================== TELA DO PLANO ============================
 <TelaDoPlano>
     BoxLayout:
@@ -304,3 +304,119 @@
 
 
 #======================== TELA TENSÃO TRIAXIAL ========================
+<TelaTensaoTri>
+    BoxLayout:
+        orientation: 'vertical'
+        ActionBar:
+            ActionView:
+                ActionPrevious:
+                    title: 'Estado Triaxial de Tensão'
+                    on_release: root.manager.current = 'TelaDoPlano'
+        BoxLayout:
+            size_hint_y: None
+            height: 30*4
+            orientation: 'horizontal'
+            Label:
+                size_hint_x: None
+                width: 50
+                text: '\u03C3 = '
+            InserirTensaoTri:
+                id: entrada_tensao_tri
+        SaidaTensaoTri:
+            id: saida_tensao_tri
+            cols: 1
+
+<InserirTensaoTri>
+        #sx: Stress X - sy: Stress Y - sz: Stress Z
+        #txy: Shear XY - tyx: Shear YZ - tzx: Shear ZX"""
+    cols: 3
+    TextInput:
+        text: '\u03C3xx'
+        multiline: False
+        id: entrada_tensaoX
+        write_tab: False
+    TextInput:
+        text: '\u03C4xy'
+        multiline: False
+        id: entrada_cisXY
+        write_tab: False
+    TextInput:
+        text: '\u03C4xz'
+        multiline: False
+        id: entrada_cisXZ
+        write_tab: False
+
+    Label:
+        text: root.ids.entrada_cisXY.text
+    TextInput:
+        text: '\u03C3yy'
+        multiline: False
+        write_tab: False
+        id: entrada_tensaoY
+    TextInput:
+        text: '\u03C4yz'
+        multiline: False
+        write_tab: False
+        id: entrada_cisYZ
+
+    Label:
+        text: root.ids.entrada_cisXZ.text
+    Label:
+        text: root.ids.entrada_cisYZ.text
+    TextInput:
+        text: '\u03C3zz'
+        multiline: False
+        write_tab: False
+        id: entrada_tensaoZ
+
+    Button:
+        text: 'Calcular'
+        on_press: root.calcular()
+        on_release: app.root.get_screen('TelaTensaoTri').ids.saida_tensao_tri.imprime_principais(*root.saida)
+
+<SaidaTensaoTri>
+    cols: 1
+    BoxLayout:
+        id: caixa_resposta_triaxial
+        orientation: 'horizontal'
+        BoxLayout:
+            orientation: 'vertical'
+            Label:
+                text: '\u03C31'
+            Label:
+                text: '\u03C32'
+            Label:
+                text: '\u03C33'
+        BoxLayout:
+            orientation: 'vertical'
+            Label:
+                text: '1'
+                id: label_result_s1
+            Label:
+                text: '2'
+                id: label_result_s2
+            Label:
+                text: '3'
+                id: label_result_s3
+        BoxLayout:
+            orientation: 'vertical'
+            Label:
+                text: '\u03C413'
+            Label:
+                text: '\u03C412'
+            Label:
+                text: '\u03C423'
+        BoxLayout:
+            orientation: 'vertical'
+            Label:
+                text: '13'
+                id: label_result_t13
+            Label:
+                text: '12'
+                id: label_result_t12
+            Label:
+                text: '23'
+                id: label_result_t23
+
+
+<GraficoTri@WidgetGrafico>
