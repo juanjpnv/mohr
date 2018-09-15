@@ -197,6 +197,75 @@ class WidgetGrafico(Widget):
         self.propriedade_grafico.remove_plot(self.arco_angulo)
 
 
+class WidgetGrafico3D(Widget):
+    # graficos
+    propriedade_grafico = ObjectProperty(None)
+
+    # traçados
+    plot_circulo1 = 0
+    plot_circulo2 = 0
+    plot_circulo3 = 0
+    eixo_x = 0
+    eixo_y = 0
+
+    # Propriedades do grafico
+    xmin = NumericProperty(0)
+    xmax = NumericProperty(0)
+    ymin = NumericProperty(0)
+    ymax = NumericProperty(0)
+
+    def desenha_circulos(self, centro1, raio1, centro2, raio2, centro3, raio3):
+        # circulo1
+        self.plot_circulo1 = MeshLinePlot(color=[1, 0, 0, 1])
+        self.plot_circulo1.points = [(centro1 + raio1 * math.cos(theta * .01), raio1 * math.sin(theta * .01))
+                                     for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
+        self.propriedade_grafico.add_plot(self.plot_circulo1)
+
+        # circulo2
+        self.plot_circulo2 = MeshLinePlot(color=[0, 1, 0, 1])
+        self.plot_circulo2.points = [(centro2 + raio2 * math.cos(theta * .01), raio2 * math.sin(theta * .01))
+                                     for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
+        self.propriedade_grafico.add_plot(self.plot_circulo2)
+
+        # circulo2
+        self.plot_circulo3 = MeshLinePlot(color=[0, 0, 1, 1])
+        self.plot_circulo3.points = [(centro3 + raio3 * math.cos(theta * .01), raio3 * math.sin(theta * .01))
+                                     for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
+        self.propriedade_grafico.add_plot(self.plot_circulo3)
+
+    def define_tamanho_grafico(self, centro1, raio1):
+        # Define os limites do quadrado dos graficos
+        self.ymax = int(1.1*raio1 + 1)
+        self.ymin = -self.ymax
+
+        self.xmax = centro1 + self.ymax
+        self.xmin = centro1 - self.ymax
+
+    def desenha_eixos(self):
+        # Desenho dos graficos
+        self.eixo_x = MeshLinePlot(color=[0, 1, 1, 1])
+        self.eixo_x.points = [(self.xmin, 0), (self.xmax, 0)]
+        self.eixo_y = MeshLinePlot(color=[0, 1, 1, 1])
+        self.eixo_y.points = [(0, self.ymin), (0, self.ymax)]
+
+        # Exibindo os graficos
+        self.propriedade_grafico.add_plot(self.eixo_x)
+        self.propriedade_grafico.add_plot(self.eixo_y)
+
+    def limpa_grafico(self):
+        self.propriedade_grafico.remove_plot(self.plot_circulo1)
+        self.propriedade_grafico.remove_plot(self.plot_circulo2)
+        self.propriedade_grafico.remove_plot(self.plot_circulo3)
+        self.propriedade_grafico.remove_plot(self.eixo_x)
+        self.propriedade_grafico.remove_plot(self.eixo_y)
+
+    def desenha(self, centro1, raio1, centro2, raio2, centro3, raio3):
+        self.limpa_grafico()
+        self.define_tamanho_grafico(centro1, raio1)
+        self.desenha_eixos()
+        self.desenha_circulos(centro1, raio1, centro2, raio2, centro3, raio3)
+
+
 # =========== Estado Plano de Deformação =====================
 class TelaDoPlanoDeformacao(Screen):  # Estado Plano de Deformação
     pass
@@ -265,13 +334,16 @@ class InserirTensaoTri(GridLayout):
     grafico = []
 
     def pega_valor(self):
-        sx = float(self.ids.entrada_tensaoX.text)
-        sy = float(self.ids.entrada_tensaoY.text)
-        sz = float(self.ids.entrada_tensaoZ.text)
-        txy = float(self.ids.entrada_cisXY.text)
-        tyz = float(self.ids.entrada_cisYZ.text)
-        tzx = float(self.ids.entrada_cisXZ.text)
-        self.entrada = [sx, sy, sz, txy, tyz, tzx]
+        try:
+            sx = float(self.ids.entrada_tensaoX.text)
+            sy = float(self.ids.entrada_tensaoY.text)
+            sz = float(self.ids.entrada_tensaoZ.text)
+            txy = float(self.ids.entrada_cisXY.text)
+            tyz = float(self.ids.entrada_cisYZ.text)
+            tzx = float(self.ids.entrada_cisXZ.text)
+            self.entrada = [sx, sy, sz, txy, tyz, tzx]
+        except ValueError:
+            self.entrada = ['error', 'error', 'error', 'error', 'error', 'error']
 
     def calcular_principal(self, sx, sy, sz, txy, tyz, tzx):
         """ Considerando: s -> sigma. t -> tau
@@ -286,36 +358,44 @@ class InserirTensaoTri(GridLayout):
         # Aplica a resolução da equação e retorna o resultado em ordem crescente:
         s3, s2, s1 = sorted(terceiro_grau(a3, a2, a1, a0))
         # Calcula-se os valores dos cisalhamentos maximos
-        t13, t12, t23 = (s1 - s3)/2, (s1 - s2)/2, (s2 - s3)/2
+        t13, t12, t23 = round((s1 - s3)/2, 3), round((s1 - s2)/2, 3), round((s2 - s3)/2, 3)
         # Armazena em forma de lista.
         self.saida = [s1, s2, s3, t13, t12, t23]
 
     def organiza_dados_graficos(self, s1, s2, s3, t13, t12, t23):
-        centro1 = (s1 + s3) / 2
-        raio1 = t13
-        centro2 = (s1 + s2) / 2
-        raio2 = t12
-        centro3 = (s2 + s3) / 2
-        raio3 = t23
+        centro1 = round((s1 + s3) / 2, 3)
+        raio1 = round(t13, 3)
+        centro2 = round((s1 + s2) / 2, 3)
+        raio2 = round(t12, 3)
+        centro3 = round((s2 + s3) / 2)
+        raio3 = round(t23, 3)
         self.grafico = [centro1, raio1, centro2, raio2, centro3, raio3]
 
     def calcular(self):
         self.pega_valor()
-        self.calcular_principal(*self.entrada)
-        self.organiza_dados_graficos(*self.saida)
+        if 'error' in self.entrada:
+            self.saida = self.entrada
+        else:
+            self.calcular_principal(*self.entrada)
+            self.organiza_dados_graficos(*self.saida)
+
+    def limpar(self):
+        self.ids.entrada_tensaoX.text = '\u03C3x'
+        self.ids.entrada_tensaoY.text = '\u03C3y'
+        self.ids.entrada_tensaoZ.text = '\u03C3z'
+        self.ids.entrada_cisXY.text = '\u03C4xy'
+        self.ids.entrada_cisYZ.text = '\u03C4yz'
+        self.ids.entrada_cisXZ.text = '\u03C4xz'
 
 
 class SaidaTensaoTri(GridLayout):
     def imprime_principais(self, s1, s2, s3, t13, t12, t23):
-        self.ids.label_result_s1.text = str(s1)
-        self.ids.label_result_s2.text = str(s2)
-        self.ids.label_result_s3.text = str(s3)
-        self.ids.label_result_t13.text = str(t13)
-        self.ids.label_result_t12.text = str(t12)
-        self.ids.label_result_t23.text = str(t23)
-
-    def imprime_couchy(self):
-        pass
+        self.ids.label_result_s1.text = '\u03C31 = '+str(s1)
+        self.ids.label_result_s2.text = '\u03C32 = '+str(s2)
+        self.ids.label_result_s3.text = '\u03C33 = '+str(s3)
+        self.ids.label_result_t13.text = '\u03C413 = '+str(t13)
+        self.ids.label_result_t12.text = '\u03C412 = '+str(t12)
+        self.ids.label_result_t23.text = '\u03C423 = '+str(t23)
 
 
 # ============ Método Principal ===============================

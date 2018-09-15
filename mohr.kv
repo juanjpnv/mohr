@@ -1,5 +1,4 @@
 # Aqui esta a tela principal, onde fica organizada as outras telas
-# Here stay the principal Layout. That layout will organize the others screens
 
 #:import MeshLinePlot kivy.garden.graph.MeshLinePlot
 #=========================TELA PRINCIPAL===============================
@@ -13,12 +12,32 @@
             pos: self.pos
             size: self.size
     #Fim da cor de fundo
-    TelaTensaoTri:
-        name: 'TelaTensaoTri'
+    TelaInicial:
+        name: 'TelaInicial'
     TelaDoPlano:
         name: 'TelaDoPlano'
     TelaDoPlanoDeformacao
         name: 'TelaDoPlanoDeformacao'
+    TelaTensaoTri:
+        name: 'TelaTensaoTri'
+#============================ TELA INICIO =============================
+<TelaInicial@Screen>
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Análise de tensão deformação'
+        BoxLayout:
+            orientation: 'vertical'
+            Button:
+                on_release: root.manager.current = 'TelaDoPlano'
+                text: 'Estado Plano de Tensão'
+            Button:
+                text: 'Estado Plano de Deformação'
+                on_release: root.manager.current = 'TelaDoPlanoDeformacao'
+            Button:
+                text: 'Estado Triaxial de Tensão'
+                on_release: root.manager.current = 'TelaTensaoTri'
+
 #=========================== TELA DO PLANO ============================
 <TelaDoPlano>
     BoxLayout:
@@ -27,9 +46,7 @@
             ActionView:
                 ActionPrevious:
                     title: 'Plano de Tens\u00e3o'
-                ActionButton:
-                    text: 'Deformacao'
-                    on_release: root.manager.current = 'TelaDoPlanoDeformacao'
+                    on_release: root.manager.current = 'TelaInicial'
         ScrollView:
             id: rolagem_TelaDoPlano
             BoxLayout:
@@ -199,7 +216,7 @@
             ActionView:
                 ActionPrevious:
                     title: 'Estado Plano de Deformação'
-                    on_release: root.manager.current = 'TelaDoPlano'
+                    on_release: root.manager.current = 'TelaInicial'
         EntradaPlanoDeformacao:
             id: entrada_plano_deformacao
         SaidaPlanoDeformacao:
@@ -283,9 +300,9 @@
 
 #------------------------------------------------------------------------------------
 <WidgetGraficoDeformacao@WidgetGrafico>
-    propriedade_grafico: id_do_grafico1
+    propriedade_grafico: propriedade_grafico_deforma
     Graph:
-        id: id_do_grafico1
+        id: propriedade_grafico_deforma
         xlabel: '\u03C3'
         ylabel: '\u03C4'
         x_ticks_major: int(root.ymax/2)
@@ -311,7 +328,7 @@
             ActionView:
                 ActionPrevious:
                     title: 'Estado Triaxial de Tensão'
-                    on_release: root.manager.current = 'TelaDoPlano'
+                    on_release: root.manager.current = 'TelaInicial'
         BoxLayout:
             size_hint_y: None
             height: 30*4
@@ -323,8 +340,13 @@
             InserirTensaoTri:
                 id: entrada_tensao_tri
         SaidaTensaoTri:
+            size_hint_y: None
+            height: 30*3
             id: saida_tensao_tri
             cols: 1
+        GraficoTri:
+            id: grafico_tensao_3D
+
 
 <InserirTensaoTri>
         #sx: Stress X - sy: Stress Y - sz: Stress Z
@@ -373,6 +395,13 @@
         text: 'Calcular'
         on_press: root.calcular()
         on_release: app.root.get_screen('TelaTensaoTri').ids.saida_tensao_tri.imprime_principais(*root.saida)
+        on_release: app.root.get_screen('TelaTensaoTri').ids.grafico_tensao_3D.desenha(*root.grafico)
+    Button:
+        text: 'Limpar'
+        on_release: root.limpar()
+        on_release: app.root.get_screen('TelaTensaoTri').ids.grafico_tensao_3D.limpa_grafico()
+        on_press: app.root.get_screen('TelaTensaoTri').ids.saida_tensao_tri.imprime_principais('0','0','0','0','0','0')
+
 
 <SaidaTensaoTri>
     cols: 1
@@ -383,40 +412,41 @@
             orientation: 'vertical'
             Label:
                 text: '\u03C31'
-            Label:
-                text: '\u03C32'
-            Label:
-                text: '\u03C33'
-        BoxLayout:
-            orientation: 'vertical'
-            Label:
-                text: '1'
                 id: label_result_s1
             Label:
-                text: '2'
+                text: '\u03C32'
                 id: label_result_s2
             Label:
-                text: '3'
+                text: '\u03C33'
                 id: label_result_s3
         BoxLayout:
             orientation: 'vertical'
             Label:
                 text: '\u03C413'
-            Label:
-                text: '\u03C412'
-            Label:
-                text: '\u03C423'
-        BoxLayout:
-            orientation: 'vertical'
-            Label:
-                text: '13'
                 id: label_result_t13
             Label:
-                text: '12'
+                text: '\u03C412'
                 id: label_result_t12
             Label:
-                text: '23'
+                text: '\u03C423'
                 id: label_result_t23
 
-
-<GraficoTri@WidgetGrafico>
+<GraficoTri@WidgetGrafico3D>
+    propriedade_grafico: propriedade_grafico_tensao3D
+    Graph:
+        id: propriedade_grafico_tensao3D
+        xlabel: '\u03C3'
+        ylabel: '\u03C4'
+        x_ticks_major: int(root.ymax/2)
+        y_ticks_major: int(root.ymax/2)
+        x_grid_label: True
+        y_grid_label: True
+        padding: 5
+        x_grid: True
+        y_grid: True
+        ymin: root.ymin
+        ymax: root.ymax
+        xmin: root.xmin
+        xmax: root.xmax
+        width: root.width if (root.width < root.height) else root.height
+        height: self.width
