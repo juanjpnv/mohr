@@ -277,11 +277,14 @@ class EntradaPlanoDeformacao(GridLayout):
     grafico = []
 
     def pega_valor(self):
-        ex = float(self.ids.input_ex.text)
-        ey = float(self.ids.input_ey.text)
-        gamaxy = float(self.ids.input_gamaxy.text)
+        try:
+            ex = float(self.ids.input_ex.text)
+            ey = float(self.ids.input_ey.text)
+            gamaxy = float(self.ids.input_gamaxy.text)
 
-        self.entrada = [ex, ey, gamaxy]
+            self.entrada = [ex, ey, gamaxy]
+        except ValueError or TypeError:
+            self.entrada = [0, 0, 0]
 
     def calcula_plano_deforma(self, ex, ey, yxy):
         # Cálculo das deformações
@@ -291,7 +294,13 @@ class EntradaPlanoDeformacao(GridLayout):
         e2 = emed - ymax/2.0
 
         # Cálculo dos angulos
-        alpha1 = ((math.atan(yxy/(ex - ey)))/2.0)*180.0/math.pi
+        if yxy == 0 and (ex-ey) == 0:
+            alpha1 = 0.0
+        elif (ex == ey) and (yxy != 0):
+            alpha1 = 45.0
+        else:
+            alpha1 = ((math.atan(yxy/(ex - ey)))/2.0)*180.0/math.pi
+
         alpha2 = alpha1 + 90.0
         alphagama = alpha1 + 45.0
 
@@ -333,8 +342,8 @@ class InserirTensaoTri(GridLayout):
     entrada = []
     grafico = []
 
-    def pega_valor(self):
-        try:
+    def pega_valor(self):  # pega os valores digitados e os converte para float
+        try:  # pega e testa todos os valores
             sx = float(self.ids.entrada_tensaoX.text)
             sy = float(self.ids.entrada_tensaoY.text)
             sz = float(self.ids.entrada_tensaoZ.text)
@@ -342,10 +351,10 @@ class InserirTensaoTri(GridLayout):
             tyz = float(self.ids.entrada_cisYZ.text)
             tzx = float(self.ids.entrada_cisXZ.text)
             self.entrada = [sx, sy, sz, txy, tyz, tzx]
-        except ValueError:
+        except ValueError:  # Caso o usuário tenha digitado algum valor não numérico, é retornado a mensagem de erro.
             self.entrada = ['error', 'error', 'error', 'error', 'error', 'error']
 
-    def calcular_principal(self, sx, sy, sz, txy, tyz, tzx):
+    def calcular_principal(self, sx, sy, sz, txy, tyz, tzx):  # Calcula as tensões principais
         """ Considerando: s -> sigma. t -> tau
         Esta função recebe:
         sx: Stress X - sy: Stress Y - sz: Stress Z
@@ -362,22 +371,25 @@ class InserirTensaoTri(GridLayout):
         # Armazena em forma de lista.
         self.saida = [s1, s2, s3, t13, t12, t23]
 
-    def organiza_dados_graficos(self, s1, s2, s3, t13, t12, t23):
+    def organiza_dados_graficos(self, s1, s2, s3, t13, t12, t23):  # Gera a lista de dados usados pra desenhar o gráfico
+        # Calcula e arredonda os valores a serem usados.
         centro1 = round((s1 + s3) / 2, 3)
         raio1 = round(t13, 3)
         centro2 = round((s1 + s2) / 2, 3)
         raio2 = round(t12, 3)
         centro3 = round((s2 + s3) / 2)
         raio3 = round(t23, 3)
+        # Organiza uma lista "grafico" com os valores que serão usados para desenhar o gráfico.
         self.grafico = [centro1, raio1, centro2, raio2, centro3, raio3]
 
-    def calcular(self):
-        self.pega_valor()
-        if 'error' in self.entrada:
-            self.saida = self.entrada
-        else:
-            self.calcular_principal(*self.entrada)
-            self.organiza_dados_graficos(*self.saida)
+    def calcular(self):  # Chama todas as funções anteriores.
+        self.pega_valor()  # pega os valores digitados pelo usuário e confere se todos são numéricos.
+        if 'error' in self.entrada:  # entra aqui caso não sejam todos os valores numéricos
+            self.saida = self.entrada  # imprime a mensagem de erro
+            self.grafico = [0, 0, 0, 0, 0, 0]  # envia valores nulos para que não seja desenhado nenhum gráfico
+        else:  # entra aqui caso não haja nenhum erro com a entrada de dados.
+            self.calcular_principal(*self.entrada)  # calcula as tensões principais
+            self.organiza_dados_graficos(*self.saida)  # Gera a lista de dados usados pra desenhar o gráfico
 
     def limpar(self):
         self.ids.entrada_tensaoX.text = '\u03C3x'
