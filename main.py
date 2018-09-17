@@ -10,7 +10,7 @@ from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty, ObjectProperty
 from kivy.animation import Animation
 from kivy.uix.image import Image
-from kivy.garden.graph import Graph, MeshLinePlot
+from kivy.garden.graph import Graph, SmoothLinePlot
 
 kivy.require('1.10.0')
 
@@ -153,7 +153,7 @@ class WidgetGrafico(Widget):
             self.desenha_angulo(centro_x, raio)
 
     def desenha_circulo(self, raio, centro_x):
-        self.plot_circulo = MeshLinePlot(color=[1, 0, 0, 1])
+        self.plot_circulo = SmoothLinePlot(color=[1, 0, 0, 1])
         self.plot_circulo.points = [(centro_x + raio*math.cos(theta*.01), raio*math.sin(theta*.01))
                                     for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
         self.propriedade_grafico.add_plot(self.plot_circulo)
@@ -168,9 +168,9 @@ class WidgetGrafico(Widget):
 
     def desenha_eixo_cartesianos(self):
         # Desenho dos graficos
-        self.eixo_x = MeshLinePlot(color=[0, 1, 1, 1])
+        self.eixo_x = SmoothLinePlot(color=[0, 1, 1, 1])
         self.eixo_x.points = [(self.xmin, 0), (self.xmax, 0)]
-        self.eixo_y = MeshLinePlot(color=[0, 1, 1, 1])
+        self.eixo_y = SmoothLinePlot(color=[0, 1, 1, 1])
         self.eixo_y.points = [(0, self.ymin), (0, self.ymax)]
 
         # Exibindo os graficos
@@ -178,12 +178,12 @@ class WidgetGrafico(Widget):
         self.propriedade_grafico.add_plot(self.eixo_y)
 
     def desenha_linha(self, xstress, ystress, xyshear):
-        self.plot_linha_inicial = MeshLinePlot(color=[0, 1, 0, 1])
+        self.plot_linha_inicial = SmoothLinePlot(color=[0, 1, 0, 1])
         self.plot_linha_inicial.points = [(xstress, xyshear), (ystress, -xyshear)]
         self.propriedade_grafico.add_plot(self.plot_linha_inicial)
 
     def desenha_angulo(self, centro_x, raio):
-        self.arco_angulo = MeshLinePlot(color=[1, 1, 0, 1])
+        self.arco_angulo = SmoothLinePlot(color=[1, 1, 0, 1])
         self.arco_angulo.points = [(centro_x + 0.1*raio * math.cos(theta * .1),
                                     0.1*raio * math.sin(theta * .1)) for theta in range(0, int(20*self.angulo+2))]
         self.propriedade_grafico.add_plot(self.arco_angulo)
@@ -216,19 +216,19 @@ class WidgetGrafico3D(Widget):
 
     def desenha_circulos(self, centro1, raio1, centro2, raio2, centro3, raio3):
         # circulo1
-        self.plot_circulo1 = MeshLinePlot(color=[1, 0, 0, 1])
+        self.plot_circulo1 = SmoothLinePlot(color=[1, 0, 0, 1])
         self.plot_circulo1.points = [(centro1 + raio1 * math.cos(theta * .01), raio1 * math.sin(theta * .01))
                                      for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
         self.propriedade_grafico.add_plot(self.plot_circulo1)
 
         # circulo2
-        self.plot_circulo2 = MeshLinePlot(color=[0, 1, 0, 1])
+        self.plot_circulo2 = SmoothLinePlot(color=[0, 1, 0, 1])
         self.plot_circulo2.points = [(centro2 + raio2 * math.cos(theta * .01), raio2 * math.sin(theta * .01))
                                      for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
         self.propriedade_grafico.add_plot(self.plot_circulo2)
 
         # circulo2
-        self.plot_circulo3 = MeshLinePlot(color=[0, 0, 1, 1])
+        self.plot_circulo3 = SmoothLinePlot(color=[0, 0, 1, 1])
         self.plot_circulo3.points = [(centro3 + raio3 * math.cos(theta * .01), raio3 * math.sin(theta * .01))
                                      for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
         self.propriedade_grafico.add_plot(self.plot_circulo3)
@@ -243,9 +243,9 @@ class WidgetGrafico3D(Widget):
 
     def desenha_eixos(self):
         # Desenho dos graficos
-        self.eixo_x = MeshLinePlot(color=[0, 1, 1, 1])
+        self.eixo_x = SmoothLinePlot(color=[0, 1, 1, 1])
         self.eixo_x.points = [(self.xmin, 0), (self.xmax, 0)]
-        self.eixo_y = MeshLinePlot(color=[0, 1, 1, 1])
+        self.eixo_y = SmoothLinePlot(color=[0, 1, 1, 1])
         self.eixo_y.points = [(0, self.ymin), (0, self.ymax)]
 
         # Exibindo os graficos
