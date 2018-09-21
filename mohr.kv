@@ -1,5 +1,5 @@
 # Aqui esta a tela principal, onde fica organizada as outras telas
-
+# -*- coding: utf-8 -*-
 #:import MeshLinePlot kivy.garden.graph.MeshLinePlot
 #=========================TELA PRINCIPAL===============================
 <Principal>
@@ -52,8 +52,9 @@
             BoxLayout:
                 orientation:'vertical'
                 size_hint: 1, None
-                height: 300+0.9*root.width if root.width < root.height else 300+0.9*root.height
-                BoxLayout
+                height: 500+0.9*root.width if root.width < root.height else 500+0.9*root.height
+                BoxLayout:
+                    size_hint: 1, 0.6
                     orientation: 'horizontal'
                     InserirValores
                         id: inserirvalor
@@ -65,7 +66,7 @@
                     size_hint: None,None
                     width: 0.9*root.width if root.width < root.height else 0.9*root.height
                     height: self.width
-                    pos: root.center_x, root.center_y
+                    pos: 400, 0
                     id: grafico1
 
 # ----------------------------------------------------------------------------------
@@ -114,52 +115,68 @@
 # ----------------------------------------------------------------------------------
 # Aqui será mostrado o resultado.
 <SaidaValores>
-    cols: 4
-    rows: 4
+    orientation: 'vertical'
     Label:
-        text: u'\u03C31' # sigma 1 | tensao 1
+        size_hint: 1, 1/7
+        text: 'Tensões Principais'
+    BoxLayout:
+        size_hint: 1, 3/7
+        GridLayout:
+            cols: 2
+            Label:
+                text: u'\u03C31' # sigma 1 | tensao 1
+            Label:
+                id: resultado_x
+                text: '- MPa'
+                halign: 'right'
+            Label:
+                text: u'\u03C32' # sigma 2 | tensao 2
+            Label:
+                id: resultado_y
+                text: '- MPa'
+                halign: 'right'
+            Label:
+                text: u'\u03B81' # theta 1 | angulo 1
+                color: 1,1,0,1
+            Label:
+                id: resultado_angulo
+                text: u'- \u00B0' # º
+                color: 1,1,0,1
+                halign: 'right'
+            Label:
+                text: u'\u03B82' # theta 2 | angulo 2
+            Label:
+                id: resultado_angulo2
+                text: u'- \u00B0' # º
+                halign: 'right'
+        Button: # vai ficar o plano que gira:
+
     Label:
-        id: resultado_x
-        text: '- MPa'
-        halign: 'right'
-    Label:
-        text: u'\u03B81' # theta 1 | angulo 1
-        color: 1,1,0,1
-    Label:
-        id: resultado_angulo
-        text: u'- \u00B0' # º
-        color: 1,1,0,1
-        halign: 'right'
-    Label:
-        text: u'\u03C32' # sigma 2 | tensao 2
-    Label:
-        id: resultado_y
-        text: '- MPa'
-        halign: 'right'
-    Label:
-        text: u'\u03B82' # theta 2 | angulo 2
-    Label:
-        id: resultado_angulo2
-        text: u'- \u00B0' # º
-        halign: 'right'
-    Label:
-        text: u'\u03C4max'
-    Label:
-        id: resultado_cisalhante
-        text: '- MPa'
-        halign: 'right'
-    Label:
-        text: u'\u03B8s'
-    Label:
-        id: resultado_angulo3
-        text: u'- \u00B0'
-        halign: 'right'
-    Label:
-        text: u'\u03C3med' # sigma med | tensao media
-    Label:
-        id: resultado_med
-        text: '- MPa'
-        halign: 'right'
+        size_hint: 1, 1/7
+        text: 'Plano de Cisalhamento Máximo'
+    BoxLayout:
+        size_hint: 1, 2/7
+        GridLayout:
+            cols: 2
+            Label:
+                text: u'\u03C4max'
+            Label:
+                id: resultado_cisalhante
+                text: '- MPa'
+                halign: 'right'
+            Label:
+                text: u'\u03B8s'
+            Label:
+                id: resultado_angulo3
+                text: u'- \u00B0'
+                halign: 'right'
+            Label:
+                text: u'\u03C3med' # sigma med | tensao media
+            Label:
+                id: resultado_med
+                text: '- MPa'
+                halign: 'right'
+        Button:
 
 # ----------------------------------------------------------------------------------
 <PlanoDeSaida@Plano>
