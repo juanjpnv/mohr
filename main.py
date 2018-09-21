@@ -238,8 +238,8 @@ class WidgetGrafico3D(Widget):
         self.ymax = int(1.1*raio1 + 1)
         self.ymin = -self.ymax
 
-        self.xmax = centro1 + self.ymax
-        self.xmin = centro1 - self.ymax
+        self.xmax = round(centro1 + self.ymax, 0)
+        self.xmin = round(centro1 - self.ymax, 0)
 
     def desenha_eixos(self):
         # Desenho dos graficos
