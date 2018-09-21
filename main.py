@@ -13,7 +13,7 @@ from kivy.uix.image import Image
 from kivy.garden.graph import Graph, SmoothLinePlot
 
 kivy.require('1.10.0')
-
+print('mudança')
 
 class Principal(ScreenManager):
     pass
