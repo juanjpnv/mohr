@@ -51,10 +51,9 @@
             id: rolagem_TelaDoPlano
             BoxLayout:
                 orientation:'vertical'
-                size_hint: 1, None
-                height: 500+0.9*root.width if root.width < root.height else 500+0.9*root.height
+                size_hint: 1, 1.5
                 BoxLayout:
-                    size_hint: 1, 0.6
+                    size_hint: 1, 0.5
                     orientation: 'horizontal'
                     InserirValores
                         id: inserirvalor
@@ -62,12 +61,9 @@
                         id: planodesaida
                 SaidaValores
                     id: saidavalor
-                WidgetGraficoPlano
-                    size_hint: None,None
-                    width: 0.9*root.width if root.width < root.height else 0.9*root.height
-                    height: self.width
-                    pos: 400, 0
-                    id: grafico1
+                WidgetGrafico:
+                    id: grafico_tensao_2d
+                    size_hint: 1, 1.3
 
 # ----------------------------------------------------------------------------------
 # Aqui fica a tela onde o usuário irá inserir os valores de entrada do estado plano
@@ -104,12 +100,12 @@
         text: 'Calcular'
         on_press: root.calcular(); app.root.get_screen('TelaDoPlano').ids.saidavalor.imprimir_tensoes(*root.saida);
         on_release: app.root.get_screen('TelaDoPlano').ids.planodesaida.muda_angulo(root.saida[3]);
-        on_release: app.root.get_screen('TelaDoPlano').ids.grafico1.desenha(root.saida[2], root.saida[6], *root.entrada, root.saida[3])
+        on_release: app.root.get_screen('TelaDoPlano').ids.grafico_tensao_2d.grafico_2d(*root.grafico)
     Button:
         id: botao_limpar
         text: 'Limpar'
         on_press: root.limpa(); app.root.get_screen('TelaDoPlano').ids.saidavalor.imprimir_tensoes(*root.saida)
-        on_release: app.root.get_screen('TelaDoPlano').ids.grafico1.limpa_grafico();
+        on_release: app.root.get_screen('TelaDoPlano').ids.grafico_tensao_2d.grafico_2d(*root.grafico)
         on_release: app.root.get_screen('TelaDoPlano').ids.planodesaida.muda_angulo(0.0);
 
 # ----------------------------------------------------------------------------------
@@ -204,26 +200,6 @@
             rgba: 1,1,0,1
         Line:                               #Começa em "90" e vai até "-root.angle+90" negativo pra girar em sentido antihorário e +90 pra compensar o ponto de inicio
             circle: (*self.center, 0.2*self.height, 90, -root.angle+90) #desenha angulo principal 1.
-# ----------------------------------------------------------------------------------
-<WidgetGraficoPlano@WidgetGrafico>
-    propriedade_grafico: id_do_grafico1
-    Graph:
-        id: id_do_grafico1
-        xlabel: '\u03C3'
-        ylabel: '\u03C4'
-        x_ticks_major: int(root.ymax/2)
-        y_ticks_major: int(root.ymax/2)
-        x_grid_label: True
-        y_grid_label: True
-        padding: 5
-        x_grid: True
-        y_grid: True
-        ymin: root.ymin
-        ymax: root.ymax
-        xmin: root.xmin
-        xmax: root.xmax
-        width: root.width if (root.width < root.height) else root.height
-        height: self.width
 
 #==================== TELA DO PLANO DE DEFORMAÇÃO =====================
 <TelaDoPlanoDeformacao>
@@ -238,7 +214,7 @@
             id: entrada_plano_deformacao
         SaidaPlanoDeformacao:
             id: saida_plano_deformacao
-        WidgetGraficoDeformacao:
+        WidgetGrafico:
             id: grafico_deforma
 
 # ----------------------------------------------------------------------------------
@@ -257,7 +233,7 @@
         id: label_gamaxy
     Button:
         text: 'Calcular'
-        on_press: root.calcular(); app.root.get_screen('TelaDoPlanoDeformacao').ids.grafico_deforma.desenha(*root.grafico)
+        on_press: root.calcular(); app.root.get_screen('TelaDoPlanoDeformacao').ids.grafico_deforma.grafico_2d(*root.grafico)
         on_release: app.root.get_screen('TelaDoPlanoDeformacao').ids.saida_plano_deformacao.valores(root.saida)
 
     TextInput:
@@ -275,7 +251,7 @@
     Button:
         text: 'Limpar'
         on_press: root.limpar()
-        on_press: app.root.get_screen('TelaDoPlanoDeformacao').ids.grafico_deforma.limpa_grafico()
+        on_press: app.root.get_screen('TelaDoPlanoDeformacao').ids.grafico_deforma.grafico_2d(0,0,0,0,0)
         on_press: app.root.get_screen('TelaDoPlanoDeformacao').ids.saida_plano_deformacao.valores(['']*7)
 #------------------------------------------------------------------------------------
 <SaidaPlanoDeformacao>
@@ -357,12 +333,10 @@
             InserirTensaoTri:
                 id: entrada_tensao_tri
         SaidaTensaoTri:
-            size_hint_y: None
-            height: 30*3
             id: saida_tensao_tri
-            cols: 1
-        GraficoTri:
+        WidgetGrafico:
             id: grafico_tensao_3D
+            size_hint: 1, 1.5
 
 
 <InserirTensaoTri>
@@ -412,11 +386,11 @@
         text: 'Calcular'
         on_press: root.calcular()
         on_release: app.root.get_screen('TelaTensaoTri').ids.saida_tensao_tri.imprime_principais(*root.saida)
-        on_release: app.root.get_screen('TelaTensaoTri').ids.grafico_tensao_3D.desenha(*root.grafico)
+        on_release: app.root.get_screen('TelaTensaoTri').ids.grafico_tensao_3D.grafico_3d(*root.grafico)
     Button:
         text: 'Limpar'
         on_release: root.limpar()
-        on_release: app.root.get_screen('TelaTensaoTri').ids.grafico_tensao_3D.limpa_grafico()
+        on_release: app.root.get_screen('TelaTensaoTri').ids.grafico_tensao_3D.grafico_3d(0,0,0,0,0,0)
         on_press: app.root.get_screen('TelaTensaoTri').ids.saida_tensao_tri.imprime_principais('0','0','0','0','0','0')
 
 
@@ -447,23 +421,3 @@
             Label:
                 text: '\u03C423'
                 id: label_result_t23
-
-<GraficoTri@WidgetGrafico3D>
-    propriedade_grafico: propriedade_grafico_tensao3D
-    Graph:
-        id: propriedade_grafico_tensao3D
-        xlabel: '\u03C3'
-        ylabel: '\u03C4'
-        x_ticks_major: int(root.ymax/2)
-        y_ticks_major: int(root.ymax/2)
-        x_grid_label: True
-        y_grid_label: True
-        padding: 5
-        x_grid: True
-        y_grid: True
-        ymin: root.ymin
-        ymax: root.ymax
-        xmin: root.xmin
-        xmax: root.xmax
-        width: root.width if (root.width < root.height) else root.height
-        height: self.width

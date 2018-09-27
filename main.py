@@ -8,12 +8,14 @@ from kivy.app import App
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.widget import Widget
-
 from kivy.properties import NumericProperty, ObjectProperty
 from kivy.animation import Animation
 from kivy.uix.image import Image
-from kivy.garden.graph import Graph, SmoothLinePlot
+
+import matplotlib
+matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
+import matplotlib.pyplot as plt
 
 kivy.require('1.10.0')
 
@@ -34,7 +36,8 @@ Considerando: s -> sigma, t -> tau
     t1: Principal Shear 1
     t2: Principal Shear 2
     t3: Principal Shear 3
-    R: radius
+    r: radius
+    cnt: center
     tht: theta
 """
 
@@ -67,6 +70,7 @@ class InserirValores(GridLayout):
         super().__init__(**kwargs)
         self.entrada = 0  # armazena os valores do usuário em formato float
         self.saida = 0  # armazena os resultado dos cálculos
+        self.grafico = []
 
     # Esta função pega os valores digitados e os transforma em valores float
     def pegar_valores(self):
@@ -81,6 +85,7 @@ class InserirValores(GridLayout):
             self.entrada = [sx, sy, txy]
         except ValueError:  # Se houver algum valor que não seja numerico, essa mensagem de erro é retornada
             self.entrada = ['0', '0', '0']
+            self.grafico = [0, 0, 0, 0, 0]
 
     # Recebe os valores floats e calcula
     def calcular_tensoes(self, sx, sy, txy):
@@ -117,8 +122,11 @@ class InserirValores(GridLayout):
             self.saida = [round(ps1, 2), round(ps2, 2), round(tmax, 2), round(angulo_ps1, 2),
                           round(angulo_ps2, 2), round(angulo_s, 2), round(smed, 2)]
 
+            self.grafico = [round(tmax, 2), round(smed, 2), sx, sy, txy]
+
         except TypeError or ValueError:
             self.saida = 0, 0, 0, 0, 0, 0, 0
+            self.grafico = [0, 0, 0, 0, 0]
 
     # Executa os processos de calculo ao pressionar o botão
     def calcular(self):
@@ -129,6 +137,7 @@ class InserirValores(GridLayout):
     # Executa os processos de limpeza
     def limpa(self):
         self.entrada = [0, 0, 0]
+        self.grafico = [0, 0, 0, 0, 0]
         self.saida = ['-', '-', '-', '-', '-', '-', '-']
         self.ids.entrada_tensaoX.text = ''
         self.ids.entrada_tensaoY.text = ''
@@ -161,155 +170,6 @@ class Plano(Image):
     def muda_angulo(self, ang):
         angulo = ang
         Animation(center=self.center, angle=angulo).start(self)
-
-
-# ============ Gráfico ============================
-class WidgetGrafico(Widget):
-    # graficos
-    propriedade_grafico = ObjectProperty(None)
-
-    # traçados
-    plot_circulo = 0            # Gráfico do circulo
-    plot_linha_inicial = 0      # Linha do ponto inicial
-    arco_angulo = 0             # Arco do angulo
-    eixo_x = 0                  # Linha do eixo X
-    eixo_y = 0                  # Linha do eixo Y
-
-    # Propriedades do grafico
-    xmin = NumericProperty(0)
-    xmax = NumericProperty(0)
-    ymin = NumericProperty(0)
-    ymax = NumericProperty(0)
-    angulo = NumericProperty(0)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def desenha(self, raio, centro_x, sx, sy, txy, angulo_ps1):
-        self.limpa_grafico()
-
-        if raio == 0:
-            pass
-        else:
-            self.angulo = angulo_ps1 * 2 * math.pi / 360  # transformação para radianos
-            self.define_tamanho_grafico(raio, centro_x)
-            self.desenha_eixo_cartesianos()
-            self.desenha_circulo(raio, centro_x)
-            self.desenha_linha(sx, sy, txy)
-            self.desenha_angulo(centro_x, raio)
-
-    def desenha_circulo(self, raio, centro_x):
-        self.plot_circulo = SmoothLinePlot(color=[1, 0, 0, 1])
-        self.plot_circulo.points = [(centro_x + raio*math.cos(theta*.01), raio*math.sin(theta*.01))
-                                    for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
-        self.propriedade_grafico.add_plot(self.plot_circulo)
-
-    def define_tamanho_grafico(self, raio, centro_x):
-        # Define os limites do quadrado dos graficos
-        self.ymax = int(1.1*raio + 1)
-        self.ymin = -self.ymax
-
-        self.xmax = centro_x + self.ymax
-        self.xmin = centro_x - self.ymax
-
-    def desenha_eixo_cartesianos(self):
-        # Desenho dos graficos
-        self.eixo_x = SmoothLinePlot(color=[0, 1, 1, 1])
-        self.eixo_x.points = [(self.xmin, 0), (self.xmax, 0)]
-        self.eixo_y = SmoothLinePlot(color=[0, 1, 1, 1])
-        self.eixo_y.points = [(0, self.ymin), (0, self.ymax)]
-
-        # Exibindo os graficos
-        self.propriedade_grafico.add_plot(self.eixo_x)
-        self.propriedade_grafico.add_plot(self.eixo_y)
-
-    def desenha_linha(self, sx, sy, txy):
-        self.plot_linha_inicial = SmoothLinePlot(color=[0, 1, 0, 1])
-        self.plot_linha_inicial.points = [(sx, txy), (sy, -txy)]
-        self.propriedade_grafico.add_plot(self.plot_linha_inicial)
-
-    def desenha_angulo(self, centro_x, raio):
-        self.arco_angulo = SmoothLinePlot(color=[1, 1, 0, 1])
-        self.arco_angulo.points = [(centro_x + 0.1*raio * math.cos(theta * .1),
-                                    0.1*raio * math.sin(theta * .1)) for theta in range(0, int(20*self.angulo+2))]
-        self.propriedade_grafico.add_plot(self.arco_angulo)
-
-    def limpa_grafico(self):
-        self.angulo = 0.0
-        self.propriedade_grafico.remove_plot(self.plot_circulo)
-        self.propriedade_grafico.remove_plot(self.eixo_x)
-        self.propriedade_grafico.remove_plot(self.eixo_y)
-        self.propriedade_grafico.remove_plot(self.plot_linha_inicial)
-        self.propriedade_grafico.remove_plot(self.arco_angulo)
-
-
-class WidgetGrafico3D(Widget):
-    # graficos
-    propriedade_grafico = ObjectProperty(None)
-
-    # traçados
-    plot_circulo1 = 0
-    plot_circulo2 = 0
-    plot_circulo3 = 0
-    eixo_x = 0
-    eixo_y = 0
-
-    # Propriedades do grafico
-    xmin = NumericProperty(0)
-    xmax = NumericProperty(0)
-    ymin = NumericProperty(0)
-    ymax = NumericProperty(0)
-
-    def desenha_circulos(self, centro1, raio1, centro2, raio2, centro3, raio3):
-        # circulo1
-        self.plot_circulo1 = SmoothLinePlot(color=[1, 0, 0, 1])
-        self.plot_circulo1.points = [(centro1 + raio1 * math.cos(theta * .01), raio1 * math.sin(theta * .01))
-                                     for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
-        self.propriedade_grafico.add_plot(self.plot_circulo1)
-
-        # circulo2
-        self.plot_circulo2 = SmoothLinePlot(color=[0, 1, 0, 1])
-        self.plot_circulo2.points = [(centro2 + raio2 * math.cos(theta * .01), raio2 * math.sin(theta * .01))
-                                     for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
-        self.propriedade_grafico.add_plot(self.plot_circulo2)
-
-        # circulo2
-        self.plot_circulo3 = SmoothLinePlot(color=[0, 0, 1, 1])
-        self.plot_circulo3.points = [(centro3 + raio3 * math.cos(theta * .01), raio3 * math.sin(theta * .01))
-                                     for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
-        self.propriedade_grafico.add_plot(self.plot_circulo3)
-
-    def define_tamanho_grafico(self, centro1, raio1):
-        # Define os limites do quadrado dos graficos
-        self.ymax = int(1.1*raio1 + 1)
-        self.ymin = -self.ymax
-
-        self.xmax = round(centro1 + self.ymax, 0)
-        self.xmin = round(centro1 - self.ymax, 0)
-
-    def desenha_eixos(self):
-        # Desenho dos graficos
-        self.eixo_x = SmoothLinePlot(color=[0, 1, 1, 1])
-        self.eixo_x.points = [(self.xmin, 0), (self.xmax, 0)]
-        self.eixo_y = SmoothLinePlot(color=[0, 1, 1, 1])
-        self.eixo_y.points = [(0, self.ymin), (0, self.ymax)]
-
-        # Exibindo os graficos
-        self.propriedade_grafico.add_plot(self.eixo_x)
-        self.propriedade_grafico.add_plot(self.eixo_y)
-
-    def limpa_grafico(self):
-        self.propriedade_grafico.remove_plot(self.plot_circulo1)
-        self.propriedade_grafico.remove_plot(self.plot_circulo2)
-        self.propriedade_grafico.remove_plot(self.plot_circulo3)
-        self.propriedade_grafico.remove_plot(self.eixo_x)
-        self.propriedade_grafico.remove_plot(self.eixo_y)
-
-    def desenha(self, centro1, raio1, centro2, raio2, centro3, raio3):
-        self.limpa_grafico()
-        self.define_tamanho_grafico(centro1, raio1)
-        self.desenha_eixos()
-        self.desenha_circulos(centro1, raio1, centro2, raio2, centro3, raio3)
 
 
 # =========== Estado Plano de Deformação =====================
@@ -355,7 +215,7 @@ class EntradaPlanoDeformacao(GridLayout):
 
     def organiza_dados_grafico(self):
         self.grafico = [self.saida[2] / 2, self.saida[3], self.entrada[0], self.entrada[1],
-                        self.entrada[2] / 2, self.saida[4]]
+                        self.entrada[2] / 2]
 
     def calcular(self):
         self.pega_valor()
@@ -419,14 +279,14 @@ class InserirTensaoTri(GridLayout):
 
     def organiza_dados_graficos(self, s1, s2, s3, t13, t12, t23):  # Gera a lista de dados usados pra desenhar o gráfico
         # Calcula e arredonda os valores a serem usados.
-        centro1 = round((s1 + s3) / 2, 3)
-        raio1 = round(t13, 3)
-        centro2 = round((s1 + s2) / 2, 3)
-        raio2 = round(t12, 3)
-        centro3 = round((s2 + s3) / 2)
-        raio3 = round(t23, 3)
+        cnt1 = round((s1 + s3) / 2, 3)
+        r1 = round(t13, 3)
+        cnt2 = round((s1 + s2) / 2, 3)
+        r2 = round(t12, 3)
+        cnt3 = round((s2 + s3) / 2)
+        r3 = round(t23, 3)
         # Organiza uma lista "grafico" com os valores que serão usados para desenhar o gráfico.
-        self.grafico = [centro1, raio1, centro2, raio2, centro3, raio3]
+        self.grafico = [r1, cnt1, r2, cnt2, r3, cnt3]
 
     def calcular(self):  # Chama todas as funções anteriores.
         self.pega_valor()  # pega os valores digitados pelo usuário e confere se todos são numéricos.
@@ -454,6 +314,71 @@ class SaidaTensaoTri(GridLayout):
         self.ids.label_result_t13.text = '\u03C413 = '+str(t13)
         self.ids.label_result_t12.text = '\u03C412 = '+str(t12)
         self.ids.label_result_t23.text = '\u03C423 = '+str(t23)
+
+
+# =============== MatPlotLib ===============
+class WidgetGrafico(BoxLayout):
+    """
+    Simbolos, siglas e abreviações:
+        r: raio
+        cnt: centro
+        tht: theta
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    @staticmethod
+    def pontos_circulo(r, cnt):
+        # gerar os pontos do círculo:
+        x = []
+        y = []
+        tht_vezes_100 = list(range(0, 630))  # cria uma lista de numeros inteiros de 0 até 629 (aproximadamente 2pi*100)
+        for tht in tht_vezes_100:  # Gera duas listas com os valores para X e Y
+            tht = tht/100
+            x.append(cnt + r*math.cos(tht))
+            y.append(r*math.sin(tht))
+        return x, y
+
+    def grafico_2d(self, r, cnt, sx, sy, txy):
+        plt.style.use('dark_background')  # tema escuro
+
+        x, y = self.pontos_circulo(r, cnt)  # dados de plotagem do circulo
+
+        fig, grafico = plt.subplots()  # variavel que armazena o grafico
+
+        grafico.plot(x, y)  # plot do círculo
+        grafico.plot([sx, sy], [txy, -txy])
+
+        grafico.grid(True, linestyle='--')  # grade
+        grafico.set(xlabel='Tensão Normal', ylabel='Cisalhamento', title='Círculo de Mohr', aspect='equal')  # ajustes
+
+        ylim1, ylim2 = plt.ylim()  # invertendo o eixo do grafico
+        plt.ylim(ylim2, ylim1)  # invertendo o eixo do grafico
+
+        self.clear_widgets()
+        self.add_widget(FigureCanvasKivyAgg(plt.gcf()))
+
+    def grafico_3d(self, r1, cnt1, r2, cnt2, r3, cnt3):
+        plt.style.use('dark_background')  # tema escuro
+
+        x1, y1 = self.pontos_circulo(r1, cnt1)  # dados de plotagem do circulo
+        x2, y2 = self.pontos_circulo(r2, cnt2)  # dados de plotagem do circulo
+        x3, y3 = self.pontos_circulo(r3, cnt3)  # dados de plotagem do circulo
+
+        fig, grafico = plt.subplots()  # variavel que armazena o grafico
+
+        grafico.plot(x1, y1)  # plot do círculo
+        grafico.plot(x2, y2)
+        grafico.plot(x3, y3)
+
+        grafico.grid(True, linestyle='--')  # grade
+        grafico.set(xlabel='Tensão Normal', ylabel='Cisalhamento', title='Círculo de Mohr', aspect='equal')  # ajustes
+
+        ylim1, ylim2 = plt.ylim()  # invertendo o eixo do grafico
+        plt.ylim(ylim2, ylim1)  # invertendo o eixo do grafico
+
+        self.clear_widgets()
+        self.add_widget(FigureCanvasKivyAgg(plt.gcf()))
 
 
 # ============ Método Principal ===============================
