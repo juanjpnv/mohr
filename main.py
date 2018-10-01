@@ -8,7 +8,7 @@ from kivy.app import App
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import NumericProperty, ObjectProperty
+from kivy.properties import NumericProperty
 from kivy.animation import Animation
 from kivy.uix.image import Image
 
@@ -39,6 +39,7 @@ Considerando: s -> sigma, t -> tau
     r: radius
     cnt: center
     tht: theta
+    ang: angle
 """
 
 
@@ -97,30 +98,24 @@ class InserirValores(GridLayout):
 
             # Cálculo do ângulo principal 1. Evita que haja erro de divisão por zero no cálculo do arcotangente
             if (txy == 0) or (sx == sy and sx == 0):
-                angulo_ps1 = 0
+                ang_ps1 = 0
             elif sx == sy and sx != 0:
-                angulo_ps1 = math.copysign(45.0, txy)
+                ang_ps1 = math.copysign(45.0, txy)
             else:
-                angulo_ps1 = math.degrees(math.atan(2*txy/(sx-sy)))/2
+                ang_ps1 = math.degrees(math.atan(2*txy/(sx-sy)))/2
 
             # Abaixo evita-se que haja um ângulo negativo
-            if angulo_ps1 < 0:
-                angulo_ps1 = angulo_ps1 + 180.0
+            if ang_ps1 < 0:
+                ang_ps1 = ang_ps1 + 180.0
 
             # Calculo do angulo principal 2 (evitando numeros negativos ou maiores que 180)
-            if angulo_ps1 < 90:
-                angulo_ps2 = angulo_ps1 + 90
-            else:
-                angulo_ps2 = angulo_ps1 - 90
+            ang_ps2 = ang_ps1 + 90 if ang_ps1 < 90 else ang_ps1 - 90
 
             # Calculo angulo de cisalhamento máximo (evitando numeros negativos ou maiores que 90 graus)
-            if angulo_ps1 < 45:
-                angulo_s = angulo_ps1 + 45.0
-            else:
-                angulo_s = angulo_ps1 - 45.0
+            ang_s = ang_ps1 + 45.0 if ang_ps1 < 45 else ang_ps1 - 45.0
 
-            self.saida = [round(ps1, 2), round(ps2, 2), round(tmax, 2), round(angulo_ps1, 2),
-                          round(angulo_ps2, 2), round(angulo_s, 2), round(smed, 2)]
+            self.saida = [round(ps1, 2), round(ps2, 2), round(tmax, 2), round(ang_ps1, 2),
+                          round(ang_ps2, 2), round(ang_s, 2), round(smed, 2)]
 
             self.grafico = [round(tmax, 2), round(smed, 2), sx, sy, txy]
 
@@ -138,26 +133,26 @@ class InserirValores(GridLayout):
     def limpa(self):
         self.entrada = [0, 0, 0]
         self.grafico = [0, 0, 0, 0, 0]
-        self.saida = ['-', '-', '-', '-', '-', '-', '-']
+        self.saida = [0, 0, 0, 0, 0, 0, 0]
         self.ids.entrada_tensaoX.text = ''
         self.ids.entrada_tensaoY.text = ''
         self.ids.entrada_cisalhante.text = ''
 
 
-class SaidaValores(BoxLayout):
+class SaidaValores(GridLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     # Busca pelos labels com 'ids' contidos em SaidaValores e muda o que esta escrito neles.
     # O novo texto do label é recebido pela função
-    def imprimir_tensoes(self, ps1, ps2, tmax, angulo_ps1, angulo_ps2, angulo_s, smed):
+    def imprimir_tensoes(self, ps1, ps2, tmax, ang_ps1, ang_ps2, ang_s, smed):
         self.ids.resultado_x.text = str(ps1) + ' MPa'
         self.ids.resultado_y.text = str(ps2) + ' MPa'
         self.ids.resultado_cisalhante.text = str(tmax) + ' MPa'
-        self.ids.resultado_angulo.text = str(angulo_ps1) + u'\u00B0'
-        self.ids.resultado_angulo2.text = str(angulo_ps2) + u'\u00B0'
-        self.ids.resultado_angulo3.text = str(angulo_s) + u'\u00B0'
+        self.ids.resultado_angulo.text = str(ang_ps1) + '°'
+        self.ids.resultado_angulo2.text = str(ang_ps2) + '°'
+        self.ids.resultado_angulo3.text = str(ang_s) + '°'
         self.ids.resultado_med.text = str(smed) + ' MPa'
 
 
@@ -186,9 +181,9 @@ class EntradaPlanoDeformacao(GridLayout):
         try:
             ex = float(self.ids.input_ex.text)
             ey = float(self.ids.input_ey.text)
-            gamaxy = float(self.ids.input_gamaxy.text)
+            yxy = float(self.ids.input_gamaxy.text)
 
-            self.entrada = [ex, ey, gamaxy]
+            self.entrada = [ex, ey, yxy]
         except ValueError or TypeError:
             self.entrada = [0, 0, 0]
 
@@ -367,9 +362,9 @@ class WidgetGrafico(BoxLayout):
 
         fig, grafico = plt.subplots()  # variavel que armazena o grafico
 
-        grafico.plot(x1, y1)  # plot do círculo
-        grafico.plot(x2, y2)
-        grafico.plot(x3, y3)
+        grafico.plot(x1, y1)  # plot do círculo 1
+        grafico.plot(x2, y2)  # plot do círculo 2
+        grafico.plot(x3, y3)  # plot do círculo 3
 
         grafico.grid(True, linestyle='--')  # grade
         grafico.set(xlabel='Tensão Normal', ylabel='Cisalhamento', title='Círculo de Mohr', aspect='equal')  # ajustes
