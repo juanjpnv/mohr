@@ -1,3 +1,5 @@
+# ##### BRANCH DE REFORMA ######
+# -*- coding: utf-8 -*-
 import kivy
 import math
 from grau3 import terceiro_grau
@@ -5,91 +7,136 @@ from grau3 import terceiro_grau
 from kivy.app import App
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.widget import Widget
-
-from kivy.properties import NumericProperty, ObjectProperty
+from kivy.uix.boxlayout import BoxLayout
+from kivy.properties import NumericProperty
 from kivy.animation import Animation
 from kivy.uix.image import Image
-from kivy.garden.graph import Graph, SmoothLinePlot
+
+import matplotlib
+matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
+import matplotlib.pyplot as plt
 
 kivy.require('1.10.0')
 
+""" 
+Simbolos, abreviações e siglas usadas no código
+Considerando: s -> sigma, t -> tau
+    sx: Stress X
+    sy: Stress Y
+    sz: Stress Z
+    s1: Principal Stress 1
+    s2: Principal Stress 2
+    s3: Principal Stress 3
+    smed: Medium Stress
+    txy: Shear XY
+    tyx: Shear YZ
+    tzx: Shear ZX
+    tmax: Maximum Shear
+    t1: Principal Shear 1
+    t2: Principal Shear 2
+    t3: Principal Shear 3
+    r: radius
+    cnt: center
+    tht: theta
+    ang: angle
+"""
+
 
 class Principal(ScreenManager):
+    """
+    Classe esqueleto para uso no arquivo mohr.kv
+    """
     pass
 
 
 # ============ Estado Plano de Tensão ============================
 class TelaDoPlano(Screen):  # Estado Plano de Tensão
+    """
+    Classe esqueleto para uso no arquivo mohr.kv
+    """
     pass
 
 
 class InserirValores(GridLayout):
-    entrada = 0  # armazena os valores do usuário em formato float
-    saida = 0  # armazena os resultado dos cálculos
-
+    """
+    Classe esqueleto para uso no arquivo mohr.kv
+    Possui as funções necessárias para receber os dados do usuário e calcular os valores do Estado Plano de Tensão
+    """
     def __init__(self, **kwargs):
+        """
+        Inicia as variaveis entrada e saida que serão usadas para armazer os dados de entrada do usuário e o
+        resultado dos cálculos
+        """
         super().__init__(**kwargs)
+        self.entrada = 0  # armazena os valores do usuário em formato float
+        self.saida = 0  # armazena os resultado dos cálculos
+        self.grafico = []
+
+    # Esta função pega os valores digitados e os transforma em valores float
+    def pegar_valores(self):
+        """
+        Recebe o valor dos usuários através de TextInput e guarda o valor nas variáveis adequadas;
+        A função testa se todos os valores são numéricos, caso não sejam, uma exceção é levantada.
+        """
+        try:  # Testa se os valores são todos números
+            sx = float(self.ids.entrada_tensaoX.text)
+            sy = float(self.ids.entrada_tensaoY.text)
+            txy = float(self.ids.entrada_cisalhante.text)
+            self.entrada = [sx, sy, txy]
+        except ValueError:  # Se houver algum valor que não seja numerico, essa mensagem de erro é retornada
+            self.entrada = ['0', '0', '0']
+            self.grafico = [0, 0, 0, 0, 0]
+
+    # Recebe os valores floats e calcula
+    def calcular_tensoes(self, sx, sy, txy):
+        try:
+            tmax = round((((sx - sy)/2)**2 + txy**2)**0.5, 3)  # Cálculo do Cisalhamento máximo
+            smed = (sx + sy)/2  # Cálculo da Tensão Média
+            ps1 = smed + tmax  # Cálculo da Tensão Principal 1
+            ps2 = smed - tmax  # Cálculo da Tensão Principal 2
+
+            # Cálculo do ângulo principal 1. Evita que haja erro de divisão por zero no cálculo do arcotangente
+            if (txy == 0) or (sx == sy and sx == 0):
+                ang_ps1 = 0
+            elif sx == sy and sx != 0:
+                ang_ps1 = math.copysign(45.0, txy)
+            else:
+                ang_ps1 = math.degrees(math.atan(2*txy/(sx-sy)))/2
+
+            # Abaixo evita-se que haja um ângulo negativo
+            if ang_ps1 < 0:
+                ang_ps1 = ang_ps1 + 180.0
+
+            # Calculo do angulo principal 2 (evitando numeros negativos ou maiores que 180)
+            ang_ps2 = ang_ps1 + 90 if ang_ps1 < 90 else ang_ps1 - 90
+
+            # Calculo angulo de cisalhamento máximo (evitando numeros negativos ou maiores que 90 graus)
+            ang_s = ang_ps1 + 45.0 if ang_ps1 < 45 else ang_ps1 - 45.0
+
+            self.saida = [round(ps1, 2), round(ps2, 2), round(tmax, 2), round(ang_ps1, 2),
+                          round(ang_ps2, 2), round(ang_s, 2), round(smed, 2)]
+
+            self.grafico = [round(tmax, 2), round(smed, 2), sx, sy, txy]
+
+        except TypeError or ValueError:
+            self.saida = 0, 0, 0, 0, 0, 0, 0
+            self.grafico = [0, 0, 0, 0, 0]
 
     # Executa os processos de calculo ao pressionar o botão
     def calcular(self):
         self.pegar_valores()
-        self.calcular_tensoes(*self.entrada)
+        sx, sy, txy = self.entrada
+        self.calcular_tensoes(sx, sy, txy)
 
     # Executa os processos de limpeza
     def limpa(self):
         self.entrada = [0, 0, 0]
-        self.saida = ['-', '-', '-', '-', '-', '-', '-']
+        self.grafico = [0, 0, 0, 0, 0]
+        self.saida = [0, 0, 0, 0, 0, 0, 0]
         self.ids.entrada_tensaoX.text = ''
         self.ids.entrada_tensaoY.text = ''
         self.ids.entrada_cisalhante.text = ''
-
-    # Esta função pega os valores digitados e os transforma em valores float
-    def pegar_valores(self):
-        try:  # Testa se os valores são todos numeros
-            xstress = float(self.ids.entrada_tensaoX.text)
-            ystress = float(self.ids.entrada_tensaoY.text)
-            xyshear = float(self.ids.entrada_cisalhante.text)
-            self.entrada = [xstress, ystress, xyshear]
-        except ValueError:  # Se houver algum valor que não seja numerico, essa mensagem de erro é retornada
-            self.entrada = '0', '0', '0'
-
-    # Recebe os valores floats e calcula
-    def calcular_tensoes(self, xstress, ystress, xyshear):
-        try:
-            maxshear = round((((xstress - ystress)/2)**2 + xyshear**2)**0.5, 3)  # Cálculo do Cisalhamento máximo
-            avs = (xstress + ystress)/2  # Cálculo da Tensão Média
-            ps1 = avs + maxshear  # Cálculo da Tensão Principal 1
-            ps2 = avs - maxshear  # Cálculo da Tensão Principal 2
-
-            # Cálculo do ângulo principal 1. Evita que haja erro de divisão por zero no cálculo do arcotangente
-            if (xyshear == 0) or (xstress == ystress and xstress == 0):
-                angulo_ps1 = 0
-            elif xstress == ystress and xstress != 0:
-                angulo_ps1 = math.copysign(45.0, xyshear)
-            else:
-                angulo_ps1 = math.degrees(math.atan(2*xyshear/(xstress-ystress)))/2
-            # Abaixo evita-se que haja um ângulo negativo
-            if angulo_ps1 < 0:
-                angulo_ps1 = angulo_ps1 + 180.0
-
-            # Calculo do angulo principal 2 (evitando numeros negativos ou maiores que 180)
-            if angulo_ps1 < 90:
-                angulo_ps2 = angulo_ps1 + 90
-            else:
-                angulo_ps2 = angulo_ps1 - 90
-
-            # Calculo angulo de cisalhamento máximo (evitando numeros negativos ou maiores que 90 graus)
-            if angulo_ps1 < 45:
-                angulo_s = angulo_ps1 + 45.0
-            else:
-                angulo_s = angulo_ps1 - 45.0
-
-            self.saida = [round(ps1, 2), round(ps2, 2), round(maxshear, 2), round(angulo_ps1, 2),
-                          round(angulo_ps2, 2), round(angulo_s, 2), round(avs, 2)]
-
-        except TypeError or ValueError:
-            self.saida = 0, 0, 0, 0, 0, 0, 0
 
 
 class SaidaValores(GridLayout):
@@ -99,172 +146,14 @@ class SaidaValores(GridLayout):
 
     # Busca pelos labels com 'ids' contidos em SaidaValores e muda o que esta escrito neles.
     # O novo texto do label é recebido pela função
-    def imprimir_tensoes(self, ps1, ps2, maxshear, angulo_ps1, angulo_ps2, angulo_s, avs):
+    def imprimir_tensoes(self, ps1, ps2, tmax, ang_ps1, ang_ps2, ang_s, smed):
         self.ids.resultado_x.text = str(ps1) + ' MPa'
         self.ids.resultado_y.text = str(ps2) + ' MPa'
-        self.ids.resultado_cisalhante.text = str(maxshear) + ' MPa'
-        self.ids.resultado_angulo.text = str(angulo_ps1) + u'\u00B0'
-        self.ids.resultado_angulo2.text = str(angulo_ps2) + u'\u00B0'
-        self.ids.resultado_angulo3.text = str(angulo_s) + u'\u00B0'
-        self.ids.resultado_med.text = str(avs) + ' MPa'
-
-
-class Plano(Image):
-    angle = NumericProperty(0)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def muda_angulo(self, ang):
-        angulo = ang
-        Animation(center=self.center, angle=angulo).start(self)
-
-
-# ============ Gráfico ============================
-class WidgetGrafico(Widget):
-    # graficos
-    propriedade_grafico = ObjectProperty(None)
-
-    # traçados
-    plot_circulo = 0            # Gráfico do circulo
-    plot_linha_inicial = 0      # Linha do ponto inicial
-    arco_angulo = 0             # Arco do angulo
-    eixo_x = 0                  # Linha do eixo X
-    eixo_y = 0                  # Linha do eixo Y
-
-    # Propriedades do grafico
-    xmin = NumericProperty(0)
-    xmax = NumericProperty(0)
-    ymin = NumericProperty(0)
-    ymax = NumericProperty(0)
-    angulo = NumericProperty(0)
-
-    def desenha(self, raio, centro_x, xstress, ystress, xyshear, angulo_ps1):
-        self.limpa_grafico()
-
-        if raio == 0:
-            pass
-        else:
-            self.angulo = angulo_ps1 * 2 * math.pi / 360  # transformação para radianos
-            self.define_tamanho_grafico(raio, centro_x)
-            self.desenha_eixo_cartesianos()
-            self.desenha_circulo(raio, centro_x)
-            self.desenha_linha(xstress, ystress, xyshear)
-            self.desenha_angulo(centro_x, raio)
-
-    def desenha_circulo(self, raio, centro_x):
-        self.plot_circulo = SmoothLinePlot(color=[1, 0, 0, 1])
-        self.plot_circulo.points = [(centro_x + raio*math.cos(theta*.01), raio*math.sin(theta*.01))
-                                    for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
-        self.propriedade_grafico.add_plot(self.plot_circulo)
-
-    def define_tamanho_grafico(self, raio, centro_x):
-        # Define os limites do quadrado dos graficos
-        self.ymax = int(1.1*raio + 1)
-        self.ymin = -self.ymax
-
-        self.xmax = centro_x + self.ymax
-        self.xmin = centro_x - self.ymax
-
-    def desenha_eixo_cartesianos(self):
-        # Desenho dos graficos
-        self.eixo_x = SmoothLinePlot(color=[0, 1, 1, 1])
-        self.eixo_x.points = [(self.xmin, 0), (self.xmax, 0)]
-        self.eixo_y = SmoothLinePlot(color=[0, 1, 1, 1])
-        self.eixo_y.points = [(0, self.ymin), (0, self.ymax)]
-
-        # Exibindo os graficos
-        self.propriedade_grafico.add_plot(self.eixo_x)
-        self.propriedade_grafico.add_plot(self.eixo_y)
-
-    def desenha_linha(self, xstress, ystress, xyshear):
-        self.plot_linha_inicial = SmoothLinePlot(color=[0, 1, 0, 1])
-        self.plot_linha_inicial.points = [(xstress, xyshear), (ystress, -xyshear)]
-        self.propriedade_grafico.add_plot(self.plot_linha_inicial)
-
-    def desenha_angulo(self, centro_x, raio):
-        self.arco_angulo = SmoothLinePlot(color=[1, 1, 0, 1])
-        self.arco_angulo.points = [(centro_x + 0.1*raio * math.cos(theta * .1),
-                                    0.1*raio * math.sin(theta * .1)) for theta in range(0, int(20*self.angulo+2))]
-        self.propriedade_grafico.add_plot(self.arco_angulo)
-
-    def limpa_grafico(self):
-        self.angulo = 0.0
-        self.propriedade_grafico.remove_plot(self.plot_circulo)
-        self.propriedade_grafico.remove_plot(self.eixo_x)
-        self.propriedade_grafico.remove_plot(self.eixo_y)
-        self.propriedade_grafico.remove_plot(self.plot_linha_inicial)
-        self.propriedade_grafico.remove_plot(self.arco_angulo)
-
-
-class WidgetGrafico3D(Widget):
-    # graficos
-    propriedade_grafico = ObjectProperty(None)
-
-    # traçados
-    plot_circulo1 = 0
-    plot_circulo2 = 0
-    plot_circulo3 = 0
-    eixo_x = 0
-    eixo_y = 0
-
-    # Propriedades do grafico
-    xmin = NumericProperty(0)
-    xmax = NumericProperty(0)
-    ymin = NumericProperty(0)
-    ymax = NumericProperty(0)
-
-    def desenha_circulos(self, centro1, raio1, centro2, raio2, centro3, raio3):
-        # circulo1
-        self.plot_circulo1 = SmoothLinePlot(color=[1, 0, 0, 1])
-        self.plot_circulo1.points = [(centro1 + raio1 * math.cos(theta * .01), raio1 * math.sin(theta * .01))
-                                     for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
-        self.propriedade_grafico.add_plot(self.plot_circulo1)
-
-        # circulo2
-        self.plot_circulo2 = SmoothLinePlot(color=[0, 1, 0, 1])
-        self.plot_circulo2.points = [(centro2 + raio2 * math.cos(theta * .01), raio2 * math.sin(theta * .01))
-                                     for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
-        self.propriedade_grafico.add_plot(self.plot_circulo2)
-
-        # circulo2
-        self.plot_circulo3 = SmoothLinePlot(color=[0, 0, 1, 1])
-        self.plot_circulo3.points = [(centro3 + raio3 * math.cos(theta * .01), raio3 * math.sin(theta * .01))
-                                     for theta in range(0, 1300)]  # 130 => 40*pi (para dar 2 voltas completas)
-        self.propriedade_grafico.add_plot(self.plot_circulo3)
-
-    def define_tamanho_grafico(self, centro1, raio1):
-        # Define os limites do quadrado dos graficos
-        self.ymax = int(1.1*raio1 + 1)
-        self.ymin = -self.ymax
-
-        self.xmax = round(centro1 + self.ymax, 0)
-        self.xmin = round(centro1 - self.ymax, 0)
-
-    def desenha_eixos(self):
-        # Desenho dos graficos
-        self.eixo_x = SmoothLinePlot(color=[0, 1, 1, 1])
-        self.eixo_x.points = [(self.xmin, 0), (self.xmax, 0)]
-        self.eixo_y = SmoothLinePlot(color=[0, 1, 1, 1])
-        self.eixo_y.points = [(0, self.ymin), (0, self.ymax)]
-
-        # Exibindo os graficos
-        self.propriedade_grafico.add_plot(self.eixo_x)
-        self.propriedade_grafico.add_plot(self.eixo_y)
-
-    def limpa_grafico(self):
-        self.propriedade_grafico.remove_plot(self.plot_circulo1)
-        self.propriedade_grafico.remove_plot(self.plot_circulo2)
-        self.propriedade_grafico.remove_plot(self.plot_circulo3)
-        self.propriedade_grafico.remove_plot(self.eixo_x)
-        self.propriedade_grafico.remove_plot(self.eixo_y)
-
-    def desenha(self, centro1, raio1, centro2, raio2, centro3, raio3):
-        self.limpa_grafico()
-        self.define_tamanho_grafico(centro1, raio1)
-        self.desenha_eixos()
-        self.desenha_circulos(centro1, raio1, centro2, raio2, centro3, raio3)
-
+        self.ids.resultado_cisalhante.text = str(tmax) + ' MPa'
+        self.ids.resultado_angulo.text = str(ang_ps1) + '°'
+        self.ids.resultado_angulo2.text = str(ang_ps2) + '°'
+        self.ids.resultado_angulo3.text = str(ang_s) + '°'
+        self.ids.resultado_med.text = str(smed) + ' MPa'
 
 # =========== Estado Plano de Deformação =====================
 class TelaDoPlanoDeformacao(Screen):  # Estado Plano de Deformação
@@ -280,9 +169,9 @@ class EntradaPlanoDeformacao(GridLayout):
         try:
             ex = float(self.ids.input_ex.text)
             ey = float(self.ids.input_ey.text)
-            gamaxy = float(self.ids.input_gamaxy.text)
+            yxy = float(self.ids.input_gamaxy.text)
 
-            self.entrada = [ex, ey, gamaxy]
+            self.entrada = [ex, ey, yxy]
         except ValueError or TypeError:
             self.entrada = [0, 0, 0]
 
@@ -309,7 +198,7 @@ class EntradaPlanoDeformacao(GridLayout):
 
     def organiza_dados_grafico(self):
         self.grafico = [self.saida[2] / 2, self.saida[3], self.entrada[0], self.entrada[1],
-                        self.entrada[2] / 2, self.saida[4]]
+                        self.entrada[2] / 2]
 
     def calcular(self):
         self.pega_valor()
@@ -373,14 +262,14 @@ class InserirTensaoTri(GridLayout):
 
     def organiza_dados_graficos(self, s1, s2, s3, t13, t12, t23):  # Gera a lista de dados usados pra desenhar o gráfico
         # Calcula e arredonda os valores a serem usados.
-        centro1 = round((s1 + s3) / 2, 3)
-        raio1 = round(t13, 3)
-        centro2 = round((s1 + s2) / 2, 3)
-        raio2 = round(t12, 3)
-        centro3 = round((s2 + s3) / 2)
-        raio3 = round(t23, 3)
+        cnt1 = round((s1 + s3) / 2, 3)
+        r1 = round(t13, 3)
+        cnt2 = round((s1 + s2) / 2, 3)
+        r2 = round(t12, 3)
+        cnt3 = round((s2 + s3) / 2)
+        r3 = round(t23, 3)
         # Organiza uma lista "grafico" com os valores que serão usados para desenhar o gráfico.
-        self.grafico = [centro1, raio1, centro2, raio2, centro3, raio3]
+        self.grafico = [r1, cnt1, r2, cnt2, r3, cnt3]
 
     def calcular(self):  # Chama todas as funções anteriores.
         self.pega_valor()  # pega os valores digitados pelo usuário e confere se todos são numéricos.
@@ -408,6 +297,81 @@ class SaidaTensaoTri(GridLayout):
         self.ids.label_result_t13.text = '\u03C413 = '+str(t13)
         self.ids.label_result_t12.text = '\u03C412 = '+str(t12)
         self.ids.label_result_t23.text = '\u03C423 = '+str(t23)
+
+# ============== Widgets ===============
+class Plano(Image):
+    angle = NumericProperty(0)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def muda_angulo(self, ang):
+        angulo = ang
+        Animation(center=self.center, angle=angulo).start(self)
+
+# =============== MatPlotLib ===============
+class WidgetGrafico(BoxLayout):
+    """
+    Simbolos, siglas e abreviações:
+        r: raio
+        cnt: centro
+        tht: theta
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    @staticmethod
+    def pontos_circulo(r, cnt):
+        # gerar os pontos do círculo:
+        x = []
+        y = []
+        tht_vezes_100 = list(range(0, 630))  # cria uma lista de numeros inteiros de 0 até 629 (aproximadamente 2pi*100)
+        for tht in tht_vezes_100:  # Gera duas listas com os valores para X e Y
+            tht = tht/100
+            x.append(cnt + r*math.cos(tht))
+            y.append(r*math.sin(tht))
+        return x, y
+
+    def grafico_2d(self, r, cnt, sx, sy, txy):
+        plt.style.use('dark_background')  # tema escuro
+
+        x, y = self.pontos_circulo(r, cnt)  # dados de plotagem do circulo
+
+        fig, grafico = plt.subplots()  # variavel que armazena o grafico
+
+        grafico.plot(x, y)  # plot do círculo
+        grafico.plot([sx, sy], [txy, -txy])
+
+        grafico.grid(True, linestyle='--')  # grade
+        grafico.set(xlabel='Tensão Normal', ylabel='Cisalhamento', title='Círculo de Mohr', aspect='equal')  # ajustes
+
+        ylim1, ylim2 = plt.ylim()  # invertendo o eixo do grafico
+        plt.ylim(ylim2, ylim1)  # invertendo o eixo do grafico
+
+        self.clear_widgets()
+        self.add_widget(FigureCanvasKivyAgg(plt.gcf()))
+
+    def grafico_3d(self, r1, cnt1, r2, cnt2, r3, cnt3):
+        plt.style.use('dark_background')  # tema escuro
+
+        x1, y1 = self.pontos_circulo(r1, cnt1)  # dados de plotagem do circulo
+        x2, y2 = self.pontos_circulo(r2, cnt2)  # dados de plotagem do circulo
+        x3, y3 = self.pontos_circulo(r3, cnt3)  # dados de plotagem do circulo
+
+        fig, grafico = plt.subplots()  # variavel que armazena o grafico
+
+        grafico.plot(x1, y1)  # plot do círculo 1
+        grafico.plot(x2, y2)  # plot do círculo 2
+        grafico.plot(x3, y3)  # plot do círculo 3
+
+        grafico.grid(True, linestyle='--')  # grade
+        grafico.set(xlabel='Tensão Normal', ylabel='Cisalhamento', title='Círculo de Mohr', aspect='equal')  # ajustes
+
+        ylim1, ylim2 = plt.ylim()  # invertendo o eixo do grafico
+        plt.ylim(ylim2, ylim1)  # invertendo o eixo do grafico
+
+        self.clear_widgets()
+        self.add_widget(FigureCanvasKivyAgg(plt.gcf()))
 
 
 # ============ Método Principal ===============================
