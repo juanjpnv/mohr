@@ -155,6 +155,7 @@ class SaidaValores(GridLayout):
         self.ids.resultado_angulo3.text = str(ang_s) + '°'
         self.ids.resultado_med.text = str(smed) + ' MPa'
 
+
 # =========== Estado Plano de Deformação =====================
 class TelaDoPlanoDeformacao(Screen):  # Estado Plano de Deformação
     pass
@@ -166,14 +167,11 @@ class EntradaPlanoDeformacao(GridLayout):
     grafico = []
 
     def pega_valor(self):
-        try:
-            ex = float(self.ids.input_ex.text)
-            ey = float(self.ids.input_ey.text)
-            yxy = float(self.ids.input_gamaxy.text)
+        ex = float(self.ids.input_ex.text)
+        ey = float(self.ids.input_ey.text)
+        yxy = float(self.ids.input_gamaxy.text)
 
-            self.entrada = [ex, ey, yxy]
-        except ValueError or TypeError:
-            self.entrada = [0, 0, 0]
+        self.entrada = [ex, ey, yxy]
 
     def calcula_plano_deforma(self, ex, ey, yxy):
         # Cálculo das deformações
@@ -182,16 +180,17 @@ class EntradaPlanoDeformacao(GridLayout):
         e1 = emed + ymax/2.0
         e2 = emed - ymax/2.0
 
-        # Cálculo dos angulos
+        # Cálculo do angulos principal 1. Evita que haja erro de divisão por zero no cálculo do arcotangente
         if yxy == 0 and (ex-ey) == 0:
             alpha1 = 0.0
         elif (ex == ey) and (yxy != 0):
             alpha1 = 45.0
         else:
             alpha1 = ((math.atan(yxy/(ex - ey)))/2.0)*180.0/math.pi
-
-        alpha2 = alpha1 + 90.0
-        alphagama = alpha1 + 45.0
+        # Evita valor negativo pros angulos
+        alpha1 = alpha1 if alpha1 > 0 else 180 + alpha1
+        alpha2 = alpha1 + 90.0 if alpha1 < 90 else alpha1 - 90
+        alphagama = alpha1 + 45.0 if alpha1 < 45 else alpha1 - 45
 
         self.saida = [round(e1, 3), round(e2, 3), round(ymax, 3), round(emed, 3),
                       round(alpha1, 3), round(alpha2, 3), round(alphagama, 3)]
@@ -201,9 +200,14 @@ class EntradaPlanoDeformacao(GridLayout):
                         self.entrada[2] / 2]
 
     def calcular(self):
-        self.pega_valor()
-        self.calcula_plano_deforma(*self.entrada)
-        self.organiza_dados_grafico()
+        try:
+            self.pega_valor()
+            self.calcula_plano_deforma(*self.entrada)
+            self.organiza_dados_grafico()
+        except ValueError or TypeError:
+            self.entrada = [0, 0, 0]
+            self.saida = [0, 0, 0, 0, 0, 0, 0]
+            self.grafico = [0, 0, 0, 0, 0]
 
     def limpar(self):
         self.ids.input_ex.text = ''
@@ -216,6 +220,7 @@ class SaidaPlanoDeformacao(GridLayout):
         self.ids.label_result_e1.text = str(valores[0])
         self.ids.label_result_e2.text = str(valores[1])
         self.ids.label_result_gamamax.text = str(valores[2])
+        self.ids.label_result_emed.text = str(valores[3])
         self.ids.label_result_alpha1.text = str(valores[4])
         self.ids.label_result_alpha2.text = str(valores[5])
         self.ids.label_result_alphagama.text = str(valores[6])
@@ -298,6 +303,7 @@ class SaidaTensaoTri(GridLayout):
         self.ids.label_result_t12.text = '\u03C412 = '+str(t12)
         self.ids.label_result_t23.text = '\u03C423 = '+str(t23)
 
+
 # ============== Widgets ===============
 class Plano(Image):
     angle = NumericProperty(0)
@@ -308,6 +314,7 @@ class Plano(Image):
     def muda_angulo(self, ang):
         angulo = ang
         Animation(center=self.center, angle=angulo).start(self)
+
 
 # =============== MatPlotLib ===============
 class WidgetGrafico(BoxLayout):
