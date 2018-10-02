@@ -155,18 +155,6 @@ class SaidaValores(GridLayout):
         self.ids.resultado_angulo3.text = str(ang_s) + '°'
         self.ids.resultado_med.text = str(smed) + ' MPa'
 
-
-class Plano(Image):
-    angle = NumericProperty(0)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def muda_angulo(self, ang):
-        angulo = ang
-        Animation(center=self.center, angle=angulo).start(self)
-
-
 # =========== Estado Plano de Deformação =====================
 class TelaDoPlanoDeformacao(Screen):  # Estado Plano de Deformação
     pass
@@ -310,6 +298,16 @@ class SaidaTensaoTri(GridLayout):
         self.ids.label_result_t12.text = '\u03C412 = '+str(t12)
         self.ids.label_result_t23.text = '\u03C423 = '+str(t23)
 
+# ============== Widgets ===============
+class Plano(Image):
+    angle = NumericProperty(0)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def muda_angulo(self, ang):
+        angulo = ang
+        Animation(center=self.center, angle=angulo).start(self)
 
 # =============== MatPlotLib ===============
 class WidgetGrafico(BoxLayout):
