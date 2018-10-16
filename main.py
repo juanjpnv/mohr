@@ -10,6 +10,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import NumericProperty
 from kivy.animation import Animation
 from kivy.uix.image import Image
+from kivy.lang.builder import Builder
 
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
@@ -44,7 +45,7 @@ Considerando: s -> sigma, t -> tau
 
 class Principal(ScreenManager):
     """
-    Classe esqueleto para uso no arquivo mohr.kv
+    Classe esqueleto para uso no arquivo GUImohr.kv
     """
     pass
 
@@ -52,14 +53,14 @@ class Principal(ScreenManager):
 # ============ Estado Plano de Tensão ============================
 class TelaDoPlano(Screen):  # Estado Plano de Tensão
     """
-    Classe esqueleto para uso no arquivo mohr.kv
+    Classe esqueleto para uso no arquivo GUImohr.kv
     """
     pass
 
 
 class InserirValores(GridLayout):
     """
-    Classe esqueleto para uso no arquivo mohr.kv
+    Classe esqueleto para uso no arquivo GUImohr.kv
     Possui as funções necessárias para receber os dados do usuário e calcular os valores do Estado Plano de Tensão
     """
     def __init__(self, **kwargs):
@@ -383,6 +384,7 @@ class WidgetGrafico(BoxLayout):
 # ============ Método Principal ===============================
 class Mohr(App):
     def build(self):
+        Builder.load_string(open("GUImohr.kv", encoding="utf-8").read(), rulesonly=True)
         return Principal()
 
 
