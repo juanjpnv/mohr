@@ -1,4 +1,3 @@
-# ##### BRANCH DE REFORMA ######
 # -*- coding: utf-8 -*-
 import kivy
 import math
