@@ -7,7 +7,7 @@ from kivy.app import App
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import NumericProperty
+from kivy.properties import NumericProperty, StringProperty
 from kivy.animation import Animation
 from kivy.uix.image import Image
 from kivy.lang.builder import Builder
@@ -217,13 +217,13 @@ class EntradaPlanoDeformacao(GridLayout):
 
 class SaidaPlanoDeformacao(GridLayout):
     def valores(self, valores):
-        self.ids.label_result_e1.text = str(valores[0])
-        self.ids.label_result_e2.text = str(valores[1])
-        self.ids.label_result_gamamax.text = str(valores[2])
-        self.ids.label_result_emed.text = str(valores[3])
-        self.ids.label_result_alpha1.text = str(valores[4])
-        self.ids.label_result_alpha2.text = str(valores[5])
-        self.ids.label_result_alphagama.text = str(valores[6])
+        self.ids.label_result_e1.text = str(valores[0]) + ' μm/mm'
+        self.ids.label_result_e2.text = str(valores[1]) + ' μm/mm'
+        self.ids.label_result_gamamax.text = str(valores[2]) + ' μm/mm'
+        self.ids.label_result_emed.text = str(valores[3]) + ' μm/mm'
+        self.ids.label_result_alpha1.text = str(valores[4]) + ' º'
+        self.ids.label_result_alpha2.text = str(valores[5]) + ' º'
+        self.ids.label_result_alphagama.text = str(valores[6]) + ' º'
 
 
 # =============== Estado Triaxial de Tensao ====================
@@ -307,13 +307,45 @@ class SaidaTensaoTri(GridLayout):
 # ============== Widgets ===============
 class Plano(Image):
     angle = NumericProperty(0)
+    tamanho = NumericProperty(0)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.tamanho = self.height if self.height < self.width else self.width
 
     def muda_angulo(self, ang):
         angulo = ang
         Animation(center=self.center, angle=angulo).start(self)
+
+
+class SistemaSlide(BoxLayout):
+    valor = NumericProperty(0)
+    sx, sy, txy = 0, 0, 0
+    sx_, sy_, txy_ = NumericProperty(0), NumericProperty(0), NumericProperty(0)
+    unidade = StringProperty('')
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def pega_valor(self, sx, sy, txy):
+        try:
+            self.sx, self.sy, self.txy = float(sx), float(sy), float(txy)
+            self.rotacao_plano()
+        except ValueError:
+            self.sx, self.sy, self.txy = 0, 0, 0
+
+    def rotacao_plano(self):
+        a = (self.sx + self.sy)/2
+        b = (self.sx - self.sy)/2
+        alf = (2*self.valor)*(math.pi/180)  # alfa = 2theta em radianos
+        self.sx_ = round(a + b*math.cos(alf) + self.txy*math.sin(alf), 3)
+        self.sy_ = round(a - b*math.cos(alf) - self.txy*math.sin(alf), 3)
+        self.txy_ = round(- b*math.sin(alf) + self.txy * math.cos(alf), 3)
+
+    def limpa(self):
+        self.sx, self.sy, self.txy = 0, 0, 0
+        self.sx_, self.sy_, self.txy_ = 0, 0, 0
+        self.ids.desliza.value = 0
 
 
 # =============== MatPlotLib ===============
