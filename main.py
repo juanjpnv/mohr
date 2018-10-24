@@ -135,7 +135,7 @@ class InserirValores(GridLayout):
 
         self.saida = [round(e1, 3), round(e2, 3), round(ymax, 3), round(ang_1, 3), round(ang_2, 3), round(ang_gama, 3), round(emed, 3)]
 
-        self.grafico = [round(ymax, 2), round(emed, 2), ex, ey, yxy]
+        self.grafico = [round(ymax/2, 2), round(emed, 2), ex, ey, yxy/2]
 
     # Executa os processos de calculo ao pressionar o botão
     def calcular(self):

@@ -45,6 +45,7 @@
                 size_hint: 0.3, 1
                 orientation: 'vertical'
                 InserirValores
+                    unidade: ' MPa'
                     tipo: 'tensao'
                     simbolos: ['σx', 'σy', 'τxy']
                     id: inserirvalor
@@ -80,6 +81,7 @@
                 orientation: 'vertical'
                 InserirValores
                     tipo: 'deform'
+                    unidade: ' μm/mm'
                     simbolos: ['εx', 'εy', 'γxy']
                     id: inserirvalor
                     size_hint: 1, 0.5
@@ -130,12 +132,14 @@
     Button:
         id: botao_calcular
         text: 'Calcular'
-        on_press: root.calcular(); root.pai.saidavalor.executa_saida_valores(*root.saida)
+        on_press: root.calcular()
+        on_release: root.pai.saidavalor.executa_saida_valores(*root.saida)
         on_release: root.pai.grafico.grafico_2d(*root.grafico); root.pai.sistemaslide.pegar_valores(*root.entrada)
     Button:
         id: botao_limpar
         text: 'Limpar'
-        on_press: root.limpar(); root.pai.saidavalor.executa_saida_valores(*root.saida)
+        on_press: root.limpar()
+        on_release: root.pai.saidavalor.executa_saida_valores(*root.saida)
         on_release: root.pai.grafico.grafico_2d(*root.grafico); root.pai.sistemaslide.limpar()
 
 <SaidaValores>
@@ -212,21 +216,18 @@
                     title: 'Estado Triaxial de Tensão'
                     on_release: root.manager.current = 'TelaInicial'
         BoxLayout:
-            size_hint_y: None
-            height: 30*4
+            size_hint: 1, .3
             orientation: 'horizontal'
             Label:
-                size_hint_x: None
-                width: 50
-                text: '\u03C3 = '
+                size_hint: .1,1
+                text: 'σ = '
             InserirTensaoTri:
                 id: entra__tri
-        SaidaTensaoTri:
-            id: saida_tensao_tri
+            SaidaTensaoTri:
+                id: saida_tensao_tri
         WidgetGrafico:
             id: grafico_tensao_3D
             tipo: 'tensao'
-            size_hint: 1, 1.5
 
 #------------------------------------------------------------------------------------
 <InserirTensaoTri>
@@ -234,17 +235,17 @@
         #txy: Shear XY - tyx: Shear YZ - tzx: Shear ZX"""
     cols: 3
     TextInput:
-        text: '\u03C3xx'
+        text: 'σxx'
         multiline: False
         id: entra_X
         write_tab: False
     TextInput:
-        text: '\u03C4xy'
+        text: 'τxy'
         multiline: False
         id: entra_cisXY
         write_tab: False
     TextInput:
-        text: '\u03C4xz'
+        text: 'τxz'
         multiline: False
         id: entra_cisXZ
         write_tab: False
@@ -252,12 +253,12 @@
     Label:
         text: root.ids.entra_cisXY.text
     TextInput:
-        text: '\u03C3yy'
+        text: 'σyy'
         multiline: False
         write_tab: False
         id: entra_Y
     TextInput:
-        text: '\u03C4yz'
+        text: 'τyz'
         multiline: False
         write_tab: False
         id: entra_cisYZ
@@ -267,7 +268,7 @@
     Label:
         text: root.ids.entra_cisYZ.text
     TextInput:
-        text: '\u03C3zz'
+        text: 'σzz'
         multiline: False
         write_tab: False
         id: entra_Z
@@ -291,24 +292,24 @@
         BoxLayout:
             orientation: 'vertical'
             Label:
-                text: '\u03C31'
+                text: 'σ1'
                 id: label_result_s1
             Label:
-                text: '\u03C32'
+                text: 'σ2'
                 id: label_result_s2
             Label:
-                text: '\u03C33'
+                text: 'σ3'
                 id: label_result_s3
         BoxLayout:
             orientation: 'vertical'
             Label:
-                text: '\u03C413'
+                text: 'τ13'
                 id: label_result_t13
             Label:
-                text: '\u03C412'
+                text: 'τ12'
                 id: label_result_t12
             Label:
-                text: '\u03C423'
+                text: 'τ23'
                 id: label_result_t23
 
 #=========================== OUTROS WIDGETS============================
