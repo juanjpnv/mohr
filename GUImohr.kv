@@ -45,7 +45,6 @@
                 size_hint: 0.3, 1
                 orientation: 'vertical'
                 InserirValores
-                    unidade: ' MPa'
                     tipo: 'tensao'
                     simbolos: ['σx', 'σy', 'τxy']
                     id: inserirvalor
@@ -80,7 +79,6 @@
                 size_hint: 0.3, 1
                 orientation: 'vertical'
                 InserirValores
-                    unidade: ' µm/mm'
                     tipo: 'deform'
                     simbolos: ['εx', 'εy', 'γxy']
                     id: inserirvalor
@@ -104,7 +102,6 @@
 #==================== MÓDULOS DAS TELAS =====================
 <InserirValores>
     pai: root.parent.parent.parent.parent.ids
-    id: inserir
     cols: 2
     Label:
         id: label_tensaoX
@@ -141,8 +138,6 @@
         on_press: root.limpar(); root.pai.saidavalor.executa_saida_valores(*root.saida)
         on_release: root.pai.grafico.grafico_2d(*root.grafico); root.pai.sistemaslide.limpar()
 
-# ----------------------------------------------------------------------------------
-# Aqui será mostrado o resultado.
 <SaidaValores>
     cols: 2
     Label:  # Label de tensão principal
@@ -178,7 +173,7 @@
                 id: result_ang2
                 text: '- º' # º
                 halign: 'right'
-        Elemento:  # Quadrado que gira (tensao principal)
+        Elemento:
             source: 'Imagens/EstadoPlano.png'
             id: elemento1 # Maxima Tensao/Deformação Normal
 
@@ -203,7 +198,7 @@
                 id: result_ang3
                 text: '- º'
                 halign: 'right'
-        Elemento:  # Quadrado que gira (cisalhamento principal)
+        Elemento:
             source: 'Imagens/EstadoPlano.png'
             id: elemento2 # Máxima Tensão/Deformação Cisalhante
 
@@ -276,7 +271,6 @@
         multiline: False
         write_tab: False
         id: entra_Z
-
     Button:
         text: 'Calcular'
         on_press: root.calcular()
