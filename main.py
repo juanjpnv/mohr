@@ -89,7 +89,7 @@ class InserirValores(GridLayout):
             self.entrada = [sx, sy, txy]
         except ValueError:  # Se houver algum valor que não seja numerico, essa mensagem de erro é retornada
             self.entrada = ['0', '0', '0']
-            self.grafico = [0, 0, 0, 0, 0, 'tensao']
+            self.grafico = [0, 0, 0, 0, 0]
 
     # Recebe os valores floats e calcula
     def calcular_tensoes(self, sx, sy, txy):
@@ -124,7 +124,7 @@ class InserirValores(GridLayout):
 
         except TypeError or ValueError:
             self.saida = 0, 0, 0, 0, 0, 0, 0
-            self.grafico = [0, 0, 0, 0, 0, 'tensao']
+            self.grafico = [0, 0, 0, 0, 0]
 
     # Executa os processos de calculo ao pressionar o botão
     def calcular(self):
@@ -200,7 +200,7 @@ class EntradaPlanoDeformacao(GridLayout):
 
     def organiza_dados_grafico(self):
         self.grafico = [self.saida[2] / 2, self.saida[3], self.entrada[0], self.entrada[1],
-                        self.entrada[2] / 2, 'deform']
+                        self.entrada[2] / 2]
 
     def calcular(self):
         try:
@@ -210,7 +210,7 @@ class EntradaPlanoDeformacao(GridLayout):
         except ValueError or TypeError:
             self.entrada = [0, 0, 0]
             self.saida = [0, 0, 0, 0, 0, 0, 0]
-            self.grafico = [0, 0, 0, 0, 0, 'deform']
+            self.grafico = [0, 0, 0, 0, 0]
 
     def limpar(self):
         self.ids.input_ex.text = ''
@@ -277,13 +277,13 @@ class InserirTensaoTri(GridLayout):
         cnt3 = round((s2 + s3) / 2)
         r3 = round(t23, 3)
         # Organiza uma lista "grafico" com os valores que serão usados para desenhar o gráfico.
-        self.grafico = [r1, cnt1, r2, cnt2, r3, cnt3, 'tensao']
+        self.grafico = [r1, cnt1, r2, cnt2, r3, cnt3]
 
     def calcular(self):  # Chama todas as funções anteriores.
         self.pega_valor()  # pega os valores digitados pelo usuário e confere se todos são numéricos.
         if 'error' in self.entrada:  # entra aqui caso não sejam todos os valores numéricos
             self.saida = self.entrada  # imprime a mensagem de erro
-            self.grafico = [0, 0, 0, 0, 0, 0, 'tensao']  # envia valores nulos para que não seja desenhado nenhum gráfico
+            self.grafico = [0, 0, 0, 0, 0, 0]  # envia valores nulos para que não seja desenhado nenhum gráfico
         else:  # entra aqui caso não haja nenhum erro com a entrada de dados.
             self.calcular_principal(*self.entrada)  # calcula as tensões principais
             self.organiza_dados_graficos(*self.saida)  # Gera a lista de dados usados pra desenhar o gráfico
@@ -360,6 +360,8 @@ class WidgetGrafico(BoxLayout):
         cnt: centro
         tht: theta
     """
+    tipo = StringProperty()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -375,7 +377,7 @@ class WidgetGrafico(BoxLayout):
             y.append(r*math.sin(tht))
         return x, y
 
-    def grafico_2d(self, r, cnt, sx, sy, txy, tipo):
+    def grafico_2d(self, r, cnt, sx, sy, txy):
         plt.style.use('dark_background')  # tema escuro
 
         x, y = self.pontos_circulo(r, cnt)  # dados de plotagem do circulo
@@ -387,9 +389,9 @@ class WidgetGrafico(BoxLayout):
 
         grafico.grid(True, linestyle='--')  # grade
 
-        if tipo == 'tensao':
+        if self.tipo == 'tensao':
             grafico.set(xlabel='Tensão Normal', ylabel='Cisalhamento', title='Círculo de Mohr', aspect='equal')  # ajustes
-        if tipo == 'deform':
+        if self.tipo == 'deform':
             grafico.set(xlabel='Deformação Normal', ylabel='Deformação por Cisalhamento', title='Círculo de Mohr', aspect='equal')  # ajustes
 
         ylim1, ylim2 = plt.ylim()  # invertendo o eixo do grafico

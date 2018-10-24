@@ -37,7 +37,7 @@
         ActionBar:
             ActionView:
                 ActionPrevious:
-                    title: 'Plano de Tens\u00e3o'
+                    title: 'Plano de Tensão'
                     on_release: root.manager.current = 'TelaInicial'
         BoxLayout:
             orientation:'horizontal'
@@ -57,6 +57,7 @@
                     id: saidavalor
                     size_hint: 1, .5
                 WidgetGrafico:
+                    tipo: 'tensao'
                     id: grafico_tensao_2d
 
 
@@ -194,7 +195,6 @@
                     id: sistemaslide
                     unidade: ' μm/mm'
                     simbolos: ['θ', '\u03b5x', '\u03b5y', '\u03b3xy']
-
             BoxLayout:
                 orientation: 'vertical'
                 SaidaPlanoDeformacao:
@@ -202,6 +202,7 @@
                     id: saida_plano_deformacao
                 WidgetGrafico:
                     id: grafico_deforma
+                    tipo: 'deform'
 
 
 # ----------------------------------------------------------------------------------
@@ -334,6 +335,7 @@
             id: saida_tensao_tri
         WidgetGrafico:
             id: grafico_tensao_3D
+            tipo: 'tensao'
             size_hint: 1, 1.5
 
 
