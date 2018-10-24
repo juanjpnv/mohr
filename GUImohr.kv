@@ -45,6 +45,9 @@
                 size_hint: 0.3, 1
                 orientation: 'vertical'
                 InserirValores
+                    unidade: ' MPa'
+                    tipo: 'tensao'
+                    simbolos: ['σx', 'σy', 'τxy']
                     id: inserirvalor
                     size_hint: 1, 0.5
                 SistemaSlide:
@@ -54,125 +57,13 @@
             BoxLayout:
                 orientation: 'vertical'
                 SaidaValores
+                    unidade: ' MPa'
+                    simbolos: ['σ1', 'σ2', 'τmax', 'σmed']
                     id: saidavalor
                     size_hint: 1, .5
                 WidgetGrafico:
                     tipo: 'tensao'
-                    id: grafico_tensao_2d
-
-
-# ----------------------------------------------------------------------------------
-# Aqui fica a tela onde o usuário irá inserir os valores de entrada do estado plano
-# Here the user insert the enter values
-<InserirValores>
-    cols: 2
-    Label:
-        id: label_tensaoX
-        text: 'σX'
-    TextInput:
-        id: entrada_tensaoX
-        text: ''
-        multiline: False
-        write_tab: False
-    Label:
-        id: label_tensaoY
-        text: 'σY'
-    TextInput:
-        id: entrada_tensaoY
-        text: ''
-        multiline: False
-        write_tab: False
-    Label:
-        id: label_cisalhante
-        text: 'τ'
-    TextInput:
-        id: entrada_cisalhante
-        text: ''
-        multiline: False
-        write_tab: False
-    Button:
-        id: botao_calcular
-        text: 'Calcular'
-        on_press: root.calcular(); app.root.get_screen('TelaDoPlano').ids.saidavalor.imprimir_tensoes(*root.saida);
-        on_release: app.root.get_screen('TelaDoPlano').ids.saidavalor.ids.elementoMTP.muda_angulo(root.saida[3]);
-        on_release: app.root.get_screen('TelaDoPlano').ids.saidavalor.ids.elementoMCP.muda_angulo(root.saida[5]);
-        on_release: app.root.get_screen('TelaDoPlano').ids.grafico_tensao_2d.grafico_2d(*root.grafico)
-        on_release: app.root.get_screen('TelaDoPlano').ids.sistemaslide.pega_valor(*root.entrada)
-    Button:
-        id: botao_limpar
-        text: 'Limpar'
-        on_press: root.limpa(); app.root.get_screen('TelaDoPlano').ids.saidavalor.imprimir_tensoes(*root.saida)
-        on_release: app.root.get_screen('TelaDoPlano').ids.saidavalor.ids.elementoMTP.muda_angulo(0.0);
-        on_release: app.root.get_screen('TelaDoPlano').ids.saidavalor.ids.elementoMCP.muda_angulo(0.0);
-        on_release: app.root.get_screen('TelaDoPlano').ids.grafico_tensao_2d.grafico_2d(*root.grafico)
-        on_release: app.root.get_screen('TelaDoPlano').ids.sistemaslide.limpa()
-
-# ----------------------------------------------------------------------------------
-# Aqui será mostrado o resultado.
-<SaidaValores>
-    cols: 2
-    Label:  # Label de tensão principal
-        text: 'Tensões Principais'
-        size_hint: 1, 2/7
-    Label:  # Label de cisalhamento principal
-        text: 'Plano de Cisalhamento Máximo'
-        size_hint: 1, 2/7
-
-    BoxLayout:
-        GridLayout:
-            cols: 2
-            Label:
-                text: u'\u03C31' # sigma 1 | tensao 1
-            Label:
-                id: resultado_x
-                text: '- MPa'
-                halign: 'right'
-            Label:
-                text: u'\u03C32' # sigma 2 | tensao 2
-            Label:
-                id: resultado_y
-                text: '- MPa'
-                halign: 'right'
-            Label:
-                text: u'\u03B81' # theta 1 | angulo 1
-            Label:
-                id: resultado_angulo
-                text: u'- \u00B0' # º
-                halign: 'right'
-            Label:
-                text: u'\u03B82' # theta 2 | angulo 2
-            Label:
-                id: resultado_angulo2
-                text: u'- \u00B0' # º
-                halign: 'right'
-        Elemento:  # Quadrado que gira (tensao principal)
-            source: 'Imagens/EstadoPlano.png'
-            id: elementoMTP # elementoMTP: Elemento de Maxima Tensao Plana
-
-    BoxLayout:
-        GridLayout:
-            cols: 2
-            Label:
-                text: u'\u03C4max'
-            Label:
-                id: resultado_cisalhante
-                text: '- MPa'
-                halign: 'right'
-            Label:
-                text: u'\u03B8s'
-            Label:
-                id: resultado_angulo3
-                text: u'- \u00B0'
-                halign: 'right'
-            Label:
-                text: u'\u03C3med' # sigma med | tensao media
-            Label:
-                id: resultado_med
-                text: '- MPa'
-                halign: 'right'
-        Elemento:  # Quadrado que gira (cisalhamento principal)
-            source: 'Imagens/EstadoPlano.png'
-            id: elementoMCP # elementoMTP: Elemento de Maxima Cisalhamento Plano
+                    id: grafico
 
 #==================== TELA DO PLANO DE DEFORMAÇÃO =====================
 <TelaDoPlanoDeformacao>
@@ -184,133 +75,137 @@
                     title: 'Estado Plano de Deformação'
                     on_release: root.manager.current = 'TelaInicial'
         BoxLayout:
-            orientation: 'horizontal'
-            BoxLayout
+            orientation:'horizontal'
+            BoxLayout:
                 size_hint: 0.3, 1
                 orientation: 'vertical'
-                EntradaPlanoDeformacao:
-                    id: entrada_plano_deformacao
+                InserirValores
+                    unidade: ' µm/mm'
+                    tipo: 'deform'
+                    simbolos: ['εx', 'εy', 'γxy']
+                    id: inserirvalor
                     size_hint: 1, 0.5
                 SistemaSlide:
                     id: sistemaslide
                     unidade: ' μm/mm'
-                    simbolos: ['θ', '\u03b5x', '\u03b5y', '\u03b3xy']
+                    simbolos: ['θ', 'εx', 'εy', 'γxy']
             BoxLayout:
                 orientation: 'vertical'
-                SaidaPlanoDeformacao:
-                    size_hint: 1, 0.5
-                    id: saida_plano_deformacao
-                WidgetGrafico:
-                    id: grafico_deforma
+                SaidaValores:
                     tipo: 'deform'
+                    unidade: ' μm/mm'
+                    simbolos: ['ε1', 'ε2', 'γmax', 'εmed']
+                    size_hint: 1, 0.5
+                    id: saidavalor
+                WidgetGrafico:
+                    tipo: 'deform'
+                    id: grafico
 
+#==================== MÓDULOS DAS TELAS =====================
+<InserirValores>
+    pai: root.parent.parent.parent.parent.ids
+    id: inserir
+    cols: 2
+    Label:
+        id: label_tensaoX
+        text: root.simbolos[0]
+    TextInput:
+        id: entra_X
+        text: ''
+        multiline: False
+        write_tab: False
+    Label:
+        id: label_tensaoY
+        text: root.simbolos[1]
+    TextInput:
+        id: entra_Y
+        text: ''
+        multiline: False
+        write_tab: False
+    Label:
+        id: label_cisalhante
+        text: root.simbolos[2]
+    TextInput:
+        id: entra_cis
+        text: ''
+        multiline: False
+        write_tab: False
+    Button:
+        id: botao_calcular
+        text: 'Calcular'
+        on_press: root.calcular(); root.pai.saidavalor.executa_saida_valores(*root.saida)
+        on_release: root.pai.grafico.grafico_2d(*root.grafico); root.pai.sistemaslide.pegar_valores(*root.entrada)
+    Button:
+        id: botao_limpar
+        text: 'Limpar'
+        on_press: root.limpar(); root.pai.saidavalor.executa_saida_valores(*root.saida)
+        on_release: root.pai.grafico.grafico_2d(*root.grafico); root.pai.sistemaslide.limpar()
 
 # ----------------------------------------------------------------------------------
-<EntradaPlanoDeformacao>
+# Aqui será mostrado o resultado.
+<SaidaValores>
     cols: 2
-    Label:
-        text: '\u03b5xx (μm/mm)' # epsilon x
-        id: label_ex
-    TextInput:
-        id: input_ex
-        text: ''
-        multiline: False
-        write_tab: False
-    Label:
-        text: '\u03b5yy (μm/mm)' # epsilon y
-        id: label_ey
-    TextInput:
-        id: input_ey
-        text: ''
-        multiline: False
-        write_tab: False
-    Label:
-        text: '\u03b3yx (μm/mm)' # gama xy
-        id: label_gamaxy
-    TextInput:
-        id: input_gamaxy
-        text: ''
-        multiline: False
-        write_tab: False
-
-    Button:
-        text: 'Calcular'
-        on_press: root.calcular(); app.root.get_screen('TelaDoPlanoDeformacao').ids.grafico_deforma.grafico_2d(*root.grafico)
-        on_release: app.root.get_screen('TelaDoPlanoDeformacao').ids.saida_plano_deformacao.valores(root.saida)
-        on_release: app.root.get_screen('TelaDoPlanoDeformacao').ids.saida_plano_deformacao.ids.elementoMEP.muda_angulo(root.saida[4])
-        on_release: app.root.get_screen('TelaDoPlanoDeformacao').ids.saida_plano_deformacao.ids.elementoMDP.muda_angulo(root.saida[6])
-        on_release: app.root.get_screen('TelaDoPlanoDeformacao').ids.sistemaslide.pega_valor(*root.entrada);
-
-    Button:
-        text: 'Limpar'
-        on_press: root.limpar()
-        on_press: app.root.get_screen('TelaDoPlanoDeformacao').ids.grafico_deforma.grafico_2d(0,0,0,0,0)
-        on_press: app.root.get_screen('TelaDoPlanoDeformacao').ids.saida_plano_deformacao.valores(['']*7)
-        on_release: app.root.get_screen('TelaDoPlanoDeformacao').ids.saida_plano_deformacao.ids.elementoMEP.muda_angulo(0.0)
-        on_release: app.root.get_screen('TelaDoPlanoDeformacao').ids.saida_plano_deformacao.ids.elementoMDP.muda_angulo(0.0)
-        on_release: app.root.get_screen('TelaDoPlanoDeformacao').ids.sistemaslide.limpa();
-
-#------------------------------------------------------------------------------------
-<SaidaPlanoDeformacao>
-    cols: 2
-    Label:
-        text: 'Deformações Principais'
+    Label:  # Label de tensão principal
+        text: 'Tensões Principais'
         size_hint: 1, 2/7
-    Label:
-        text: 'Distorção principal'
+    Label:  # Label de cisalhamento principal
+        text: 'Plano de Cisalhamento Máximo'
         size_hint: 1, 2/7
-
     BoxLayout:
-        orientation: 'horizontal'
         GridLayout:
             cols: 2
             Label:
-                text: '\u03b51' # epsilon 1
+                text: root.simbolos[0]
             Label:
-                text: '' # resultado epsilon 1
-                id: label_result_e1
+                id: result_x
+                text: '- '+root.unidade
+                halign: 'right'
             Label:
-                text: '\u03b11' # alpha 1
+                text: root.simbolos[1]
             Label:
-                text: '' # resultado alpha 1
-                id: label_result_alpha1
+                id: result_y
+                text: '- '+root.unidade
+                halign: 'right'
             Label:
-                text: '\u03b52' # epsilon 2
+                text: 'θ1' # theta 1 | angulo 1
             Label:
-                text: '' # resultado epsilon 2
-                id: label_result_e2
+                id: result_ang
+                text: '- º' # º
+                halign: 'right'
             Label:
-                text: '\u03b12' # alpha 2
+                text: 'θ2' # theta 2 | angulo 2
             Label:
-                text: '' # resultado alpha 2
-                id: label_result_alpha2
+                id: result_ang2
+                text: '- º' # º
+                halign: 'right'
         Elemento:  # Quadrado que gira (tensao principal)
             source: 'Imagens/EstadoPlano.png'
-            id: elementoMEP # elementoMEP: Elemento de Maxima Epsilon Plano
+            id: elemento1 # Maxima Tensao/Deformação Normal
 
     BoxLayout:
-        orientation: 'horizontal'
         GridLayout:
             cols: 2
             Label:
-                text: '\u03b3max' # gama max
+                text: root.simbolos[2]
             Label:
-                text: '' # resultado gama max
-                id: label_result_gamamax
+                id: result_cis
+                text: '- '+root.unidade
+                halign: 'right'
             Label:
-                text: '\u03b5med' # epsilon med
+                text: root.simbolos[3]
             Label:
-                text: '' # resultado epsilon med
-                id: label_result_emed
+                id: result_med
+                text: '- '+root.unidade
+                halign: 'right'
             Label:
-                text: '\u03b1\u03b3' # alpha gama
+                text: 'θs'
             Label:
-                text: '' # resultado alpha gama
-                id: label_result_alphagama
-
+                id: result_ang3
+                text: '- º'
+                halign: 'right'
         Elemento:  # Quadrado que gira (cisalhamento principal)
             source: 'Imagens/EstadoPlano.png'
-            id: elementoMDP # elementoMDP: Elemento de Maxima Distorçao Plana
+            id: elemento2 # Máxima Tensão/Deformação Cisalhante
 
 #======================== TELA TENSÃO TRIAXIAL ========================
 <TelaTensaoTri>
@@ -330,14 +225,13 @@
                 width: 50
                 text: '\u03C3 = '
             InserirTensaoTri:
-                id: entrada_tensao_tri
+                id: entra__tri
         SaidaTensaoTri:
             id: saida_tensao_tri
         WidgetGrafico:
             id: grafico_tensao_3D
             tipo: 'tensao'
             size_hint: 1, 1.5
-
 
 #------------------------------------------------------------------------------------
 <InserirTensaoTri>
@@ -347,41 +241,41 @@
     TextInput:
         text: '\u03C3xx'
         multiline: False
-        id: entrada_tensaoX
+        id: entra_X
         write_tab: False
     TextInput:
         text: '\u03C4xy'
         multiline: False
-        id: entrada_cisXY
+        id: entra_cisXY
         write_tab: False
     TextInput:
         text: '\u03C4xz'
         multiline: False
-        id: entrada_cisXZ
+        id: entra_cisXZ
         write_tab: False
 
     Label:
-        text: root.ids.entrada_cisXY.text
+        text: root.ids.entra_cisXY.text
     TextInput:
         text: '\u03C3yy'
         multiline: False
         write_tab: False
-        id: entrada_tensaoY
+        id: entra_Y
     TextInput:
         text: '\u03C4yz'
         multiline: False
         write_tab: False
-        id: entrada_cisYZ
+        id: entra_cisYZ
 
     Label:
-        text: root.ids.entrada_cisXZ.text
+        text: root.ids.entra_cisXZ.text
     Label:
-        text: root.ids.entrada_cisYZ.text
+        text: root.ids.entra_cisYZ.text
     TextInput:
         text: '\u03C3zz'
         multiline: False
         write_tab: False
-        id: entrada_tensaoZ
+        id: entra_Z
 
     Button:
         text: 'Calcular'

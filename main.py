@@ -54,7 +54,6 @@ class Menu(Screen):
     pass
 
 
-# ============ Estado Plano de Tensão ============================
 class TelaDoPlano(Screen):  # Estado Plano de Tensão
     """
     Classe esqueleto para uso no arquivo GUImohr.kv
@@ -62,121 +61,60 @@ class TelaDoPlano(Screen):  # Estado Plano de Tensão
     pass
 
 
-class InserirValores(GridLayout):
-    """
-    Possui as funções necessárias para receber os dados do usuário e calcular os valores do Estado Plano de Tensão
-    """
-    def __init__(self, **kwargs):
-        """
-        Inicia as variaveis entrada e saida que serão usadas para armazer os dados de entrada do usuário e o
-        resultado dos cálculos
-        """
-        super().__init__(**kwargs)
-        self.entrada = 0  # armazena os valores do usuário em formato float
-        self.saida = 0  # armazena os resultado dos cálculos
-        self.grafico = []
-
-    # Esta função pega os valores digitados e os transforma em valores float
-    def pegar_valores(self):
-        """
-        Recebe o valor dos usuários através de TextInput e guarda o valor nas variáveis adequadas;
-        A função testa se todos os valores são numéricos, caso não sejam, uma exceção é levantada.
-        """
-        try:  # Testa se os valores são todos números
-            sx = float(self.ids.entrada_tensaoX.text)
-            sy = float(self.ids.entrada_tensaoY.text)
-            txy = float(self.ids.entrada_cisalhante.text)
-            self.entrada = [sx, sy, txy]
-        except ValueError:  # Se houver algum valor que não seja numerico, essa mensagem de erro é retornada
-            self.entrada = ['0', '0', '0']
-            self.grafico = [0, 0, 0, 0, 0]
-
-    # Recebe os valores floats e calcula
-    def calcular_tensoes(self, sx, sy, txy):
-        try:
-            tmax = round((((sx - sy)/2)**2 + txy**2)**0.5, 3)  # Cálculo do Cisalhamento máximo
-            smed = (sx + sy)/2  # Cálculo da Tensão Média
-            ps1 = smed + tmax  # Cálculo da Tensão Principal 1
-            ps2 = smed - tmax  # Cálculo da Tensão Principal 2
-
-            # Cálculo do ângulo principal 1. Evita que haja erro de divisão por zero no cálculo do arcotangente
-            if (txy == 0) or (sx == sy and sx == 0):
-                ang_ps1 = 0
-            elif sx == sy and sx != 0:
-                ang_ps1 = math.copysign(45.0, txy)
-            else:
-                ang_ps1 = math.degrees(math.atan(2*txy/(sx-sy)))/2
-
-            # Abaixo evita-se que haja um ângulo negativo
-            if ang_ps1 < 0:
-                ang_ps1 = ang_ps1 + 180.0
-
-            # Calculo do angulo principal 2 (evitando numeros negativos ou maiores que 180)
-            ang_ps2 = ang_ps1 + 90 if ang_ps1 < 90 else ang_ps1 - 90
-
-            # Calculo angulo de cisalhamento máximo (evitando numeros negativos ou maiores que 90 graus)
-            ang_s = ang_ps1 + 45.0 if ang_ps1 < 45 else ang_ps1 - 45.0
-
-            self.saida = [round(ps1, 2), round(ps2, 2), round(tmax, 2), round(ang_ps1, 2),
-                          round(ang_ps2, 2), round(ang_s, 2), round(smed, 2)]
-
-            self.grafico = [round(tmax, 2), round(smed, 2), sx, sy, txy]
-
-        except TypeError or ValueError:
-            self.saida = 0, 0, 0, 0, 0, 0, 0
-            self.grafico = [0, 0, 0, 0, 0]
-
-    # Executa os processos de calculo ao pressionar o botão
-    def calcular(self):
-        self.pegar_valores()
-        sx, sy, txy = self.entrada
-        self.calcular_tensoes(sx, sy, txy)
-
-    # Executa os processos de limpeza
-    def limpa(self):
-        self.entrada = [0, 0, 0]
-        self.grafico = [0, 0, 0, 0, 0]
-        self.saida = [0, 0, 0, 0, 0, 0, 0]
-        self.ids.entrada_tensaoX.text = ''
-        self.ids.entrada_tensaoY.text = ''
-        self.ids.entrada_cisalhante.text = ''
-
-
-class SaidaValores(GridLayout):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    # Busca pelos labels com 'ids' contidos em SaidaValores e muda o que esta escrito neles.
-    # O novo texto do label é recebido pela função
-    def imprimir_tensoes(self, ps1, ps2, tmax, ang_ps1, ang_ps2, ang_s, smed):
-        self.ids.resultado_x.text = str(ps1) + ' MPa'
-        self.ids.resultado_y.text = str(ps2) + ' MPa'
-        self.ids.resultado_cisalhante.text = str(tmax) + ' MPa'
-        self.ids.resultado_angulo.text = str(ang_ps1) + '°'
-        self.ids.resultado_angulo2.text = str(ang_ps2) + '°'
-        self.ids.resultado_angulo3.text = str(ang_s) + '°'
-        self.ids.resultado_med.text = str(smed) + ' MPa'
-
-
-# =========== Estado Plano de Deformação =====================
 class TelaDoPlanoDeformacao(Screen):  # Estado Plano de Deformação
     pass
 
 
-class EntradaPlanoDeformacao(GridLayout):
-    entrada = []
-    saida = []
+# Widgets
+class InserirValores(GridLayout):
+    # Variáveis globais
+    simbolos = ListProperty(['σX', 'σY', 'τ'])
+    unidade = StringProperty('')
+    tipo = StringProperty('')
+    entrada = 0
+    saida = 0
     grafico = []
 
-    def pega_valor(self):
-        ex = float(self.ids.input_ex.text)
-        ey = float(self.ids.input_ey.text)
-        yxy = float(self.ids.input_gamaxy.text)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
-        self.entrada = [ex, ey, yxy]
+    # Esta função pega os valores digitados e os transforma em valores float
+    def pegar_valores(self):
+        x = float(self.ids.entra_X.text)
+        y = float(self.ids.entra_Y.text)
+        xy = float(self.ids.entra_cis.text)
+        self.entrada = [x, y, xy]
 
-    def calcula_plano_deforma(self, ex, ey, yxy):
+    # Recebe os valores floats e calcula
+    def calcular_tensoes(self, sx, sy, txy):
+        tmax = round((((sx - sy)/2)**2 + txy**2)**0.5, 3)  # Cálculo do Cisalhamento máximo
+        smed = (sx + sy)/2  # Cálculo da Tensão Média
+        ps1 = smed + tmax  # Cálculo da Tensão Principal 1
+        ps2 = smed - tmax  # Cálculo da Tensão Principal 2
+
+        # Cálculo do ângulo principal 1. Evita que haja erro de divisão por zero no cálculo do arcotangente
+        if (txy == 0) or (sx == sy and sx == 0):
+            ang_ps1 = 0
+        elif sx == sy and sx != 0:
+            ang_ps1 = math.copysign(45.0, txy)
+        else:
+            ang_ps1 = math.degrees(math.atan(2*txy/(sx-sy)))/2
+
+        # Abaixo evita-se que haja um ângulo negativo
+        if ang_ps1 < 0:
+            ang_ps1 = ang_ps1 + 180.0
+
+        # Calculo do angulo principal 2 (evitando numeros negativos ou maiores que 180)
+        ang_ps2 = ang_ps1 + 90 if ang_ps1 < 90 else ang_ps1 - 90
+
+        # Calculo angulo de cisalhamento máximo (evitando numeros negativos ou maiores que 90 graus)
+        ang_s = ang_ps1 + 45.0 if ang_ps1 < 45 else ang_ps1 - 45.0
+
+        self.saida = [round(ps1, 2), round(ps2, 2), round(tmax, 2), round(ang_ps1, 2), round(ang_ps2, 2), round(ang_s, 2), round(smed, 2)]
+
+        self.grafico = [round(tmax, 2), round(smed, 2), sx, sy, txy]
+
+    def calcular_deforma(self, ex, ey, yxy):
         # Cálculo das deformações
         ymax = 2.0 * (((ex - ey) / 2.0) ** 2.0 + (yxy / 2.0) ** 2.0) ** .5
         emed = (ex + ey) / 2.0
@@ -185,48 +123,68 @@ class EntradaPlanoDeformacao(GridLayout):
 
         # Cálculo do angulos principal 1. Evita que haja erro de divisão por zero no cálculo do arcotangente
         if yxy == 0 and (ex-ey) == 0:
-            alpha1 = 0.0
+            ang_1 = 0.0
         elif (ex == ey) and (yxy != 0):
-            alpha1 = 45.0
+            ang_1 = 45.0
         else:
-            alpha1 = ((math.atan(yxy/(ex - ey)))/2.0)*180.0/math.pi
+            ang_1 = ((math.atan(yxy/(ex - ey)))/2.0)*180.0/math.pi
         # Evita valor negativo pros angulos
-        alpha1 = alpha1 if alpha1 > 0 else 180 + alpha1
-        alpha2 = alpha1 + 90.0 if alpha1 < 90 else alpha1 - 90
-        alphagama = alpha1 + 45.0 if alpha1 < 45 else alpha1 - 45
+        ang_1 = ang_1 if ang_1 > 0 else 180 + ang_1
+        ang_2 = ang_1 + 90.0 if ang_1 < 90 else ang_1 - 90
+        ang_gama = ang_1 + 45.0 if ang_1 < 45 else ang_1 - 45
 
-        self.saida = [round(e1, 3), round(e2, 3), round(ymax, 3), round(emed, 3),
-                      round(alpha1, 3), round(alpha2, 3), round(alphagama, 3)]
+        self.saida = [round(e1, 3), round(e2, 3), round(ymax, 3), round(ang_1, 3), round(ang_2, 3), round(ang_gama, 3), round(emed, 3)]
 
-    def organiza_dados_grafico(self):
-        self.grafico = [self.saida[2] / 2, self.saida[3], self.entrada[0], self.entrada[1],
-                        self.entrada[2] / 2]
+        self.grafico = [round(ymax, 2), round(emed, 2), ex, ey, yxy]
 
+    # Executa os processos de calculo ao pressionar o botão
     def calcular(self):
         try:
-            self.pega_valor()
-            self.calcula_plano_deforma(*self.entrada)
-            self.organiza_dados_grafico()
+            self.pegar_valores()
+            if self.tipo == 'tensao':
+                self.calcular_tensoes(*self.entrada)
+            elif self.tipo == 'deform':
+                self.calcular_deforma(*self.entrada)
+
         except ValueError or TypeError:
             self.entrada = [0, 0, 0]
             self.saida = [0, 0, 0, 0, 0, 0, 0]
             self.grafico = [0, 0, 0, 0, 0]
 
+    # Executa os processos de limpeza
     def limpar(self):
-        self.ids.input_ex.text = ''
-        self.ids.input_ey.text = ''
-        self.ids.input_gamaxy.text = ''
+        self.entrada = [0, 0, 0]
+        self.grafico = [0, 0, 0, 0, 0]
+        self.saida = [0, 0, 0, 0, 0, 0, 0]
+        self.ids.entra_X.text = ''
+        self.ids.entra_Y.text = ''
+        self.ids.entra_cis.text = ''
 
 
-class SaidaPlanoDeformacao(GridLayout):
-    def valores(self, valores):
-        self.ids.label_result_e1.text = str(valores[0]) + ' μm/mm'
-        self.ids.label_result_e2.text = str(valores[1]) + ' μm/mm'
-        self.ids.label_result_gamamax.text = str(valores[2]) + ' μm/mm'
-        self.ids.label_result_emed.text = str(valores[3]) + ' μm/mm'
-        self.ids.label_result_alpha1.text = str(valores[4]) + ' º'
-        self.ids.label_result_alpha2.text = str(valores[5]) + ' º'
-        self.ids.label_result_alphagama.text = str(valores[6]) + ' º'
+class SaidaValores(GridLayout):
+    # Variáveis globais
+    simbolos = ListProperty(['', '', '', ''])
+    unidade = StringProperty('')
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def executa_rotacao(self, ang_p1, ang_p2):
+        self.ids.elemento1.muda_angulo(ang_p1)
+        self.ids.elemento2.muda_angulo(ang_p2)
+
+    def imprimir_tensoes(self, p1, p2, cis_max, ang_p1, ang_p2, ang_cis, med):
+        self.ids.result_x.text = str(p1) + self.unidade
+        self.ids.result_y.text = str(p2) + self.unidade
+        self.ids.result_cis.text = str(cis_max) + self.unidade
+        self.ids.result_ang.text = str(ang_p1) + '°'
+        self.ids.result_ang2.text = str(ang_p2) + '°'
+        self.ids.result_ang3.text = str(ang_cis) + '°'
+        self.ids.result_med.text = str(med) + self.unidade
+
+    def executa_saida_valores(self, p1, p2, cis_max, ang_p1, ang_p2, ang_cis, med):
+        self.imprimir_tensoes(p1, p2, cis_max, ang_p1, ang_p2, ang_cis, med)
+        self.executa_rotacao(ang_p1, ang_p2)
 
 
 # =============== Estado Triaxial de Tensao ====================
@@ -241,12 +199,12 @@ class InserirTensaoTri(GridLayout):
 
     def pega_valor(self):  # pega os valores digitados e os converte para float
         try:  # pega e testa todos os valores
-            sx = float(self.ids.entrada_tensaoX.text)
-            sy = float(self.ids.entrada_tensaoY.text)
-            sz = float(self.ids.entrada_tensaoZ.text)
-            txy = float(self.ids.entrada_cisXY.text)
-            tyz = float(self.ids.entrada_cisYZ.text)
-            tzx = float(self.ids.entrada_cisXZ.text)
+            sx = float(self.ids.entra_X.text)
+            sy = float(self.ids.entra_Y.text)
+            sz = float(self.ids.entra_Z.text)
+            txy = float(self.ids.entra_cisXY.text)
+            tyz = float(self.ids.entra_cisYZ.text)
+            tzx = float(self.ids.entra_cisXZ.text)
             self.entrada = [sx, sy, sz, txy, tyz, tzx]
         except ValueError:  # Caso o usuário tenha digitado algum valor não numérico, é retornado a mensagem de erro.
             self.entrada = ['error', 'error', 'error', 'error', 'error', 'error']
@@ -289,12 +247,12 @@ class InserirTensaoTri(GridLayout):
             self.organiza_dados_graficos(*self.saida)  # Gera a lista de dados usados pra desenhar o gráfico
 
     def limpar(self):
-        self.ids.entrada_tensaoX.text = '\u03C3x'
-        self.ids.entrada_tensaoY.text = '\u03C3y'
-        self.ids.entrada_tensaoZ.text = '\u03C3z'
-        self.ids.entrada_cisXY.text = '\u03C4xy'
-        self.ids.entrada_cisYZ.text = '\u03C4yz'
-        self.ids.entrada_cisXZ.text = '\u03C4xz'
+        self.ids.entra_X.text = '\u03C3x'
+        self.ids.entra_Y.text = '\u03C3y'
+        self.ids.entra_Z.text = '\u03C3z'
+        self.ids.entra_cisXY.text = '\u03C4xy'
+        self.ids.entra_cisYZ.text = '\u03C4yz'
+        self.ids.entra_cisXZ.text = '\u03C4xz'
 
 
 class SaidaTensaoTri(GridLayout):
@@ -331,7 +289,7 @@ class SistemaSlide(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def pega_valor(self, sx, sy, txy):
+    def pegar_valores(self, sx, sy, txy):
         try:
             self.sx, self.sy, self.txy = float(sx), float(sy), float(txy)
             self.rotacao_plano()
@@ -346,7 +304,7 @@ class SistemaSlide(BoxLayout):
         self.sy_ = round(a - b*math.cos(alf) - self.txy*math.sin(alf), 3)
         self.txy_ = round(- b*math.sin(alf) + self.txy * math.cos(alf), 3)
 
-    def limpa(self):
+    def limpar(self):
         self.sx, self.sy, self.txy = 0, 0, 0
         self.sx_, self.sy_, self.txy_ = 0, 0, 0
         self.ids.desliza.value = 0
