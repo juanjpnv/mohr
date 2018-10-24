@@ -1,64 +1,8 @@
-<Principal>:
-    SistemaSlide:
-
-<SistemaSlide>
+<Principal>
     orientation: 'vertical'
-    BoxLayout:
-        orientation: 'horizontal'
-        Elemento:
-            id: plano
-            angle: root.valor
-        GridLayout:
-            size_hint: .5, 1
-            cols:2
-            Label:
-                text: 'α'
-            Label:
-                text: str(root.valor)
-            Label:
-                text: 'σx'
-            Label:
-                id: lbl_sx
-            Label:
-                text: 'σy'
-            Label:
-                id: lbl_sy
-            Label:
-                text: 'τxy'
-            Label:
-                id: lbl_txy
-    BoxLayout:
-        size_hint: 1, 1/3
-        orientation: 'vertical'
-        Slider:
-            id: desliza
-            min: 0
-            max: 180
-            padding: 0
-            #on_touch_down: print('down')
-            on_touch_up: print('up')
-            on_touch_move: print('move')
-
-<Elemento@Plano>
-    source: 'Imagens/EstadoPlano.png'
-    canvas.before:
-        PushMatrix
-        Rotate:
-            angle: root.angle
-            origin: self.center
-    canvas.after:
-        PopMatrix
-        Color:
-            rgba: 1,1,0,1
-            # Desenhar os eixos coordenados
-        Color:
-            rgba: 1,1,1,1
-        Line:
-            bezier: (*self.center, self.center_x, self.center_y+0.45*self.height)
-        Line:
-            bezier: (*self.center, self.center_x+0.45*self.height, self.center_y)
-            # Desenho dos angulos.
-        Color:
-            rgba: 1,1,0,1
-        Line:                               #Começa em "90" e vai até "-root.angle+90" negativo pra girar em sentido antihorário e +90 pra compensar o ponto de inicio
-            circle: (*self.center, 0.2*self.height, 90, -root.angle+90) #desenha angulo principal 1.
+    Label:
+        id: lbl
+        text: '1'
+    Button:
+        text: 'Pressione'
+        on_press: root.ids.lbl.text = str(int(root.ids.lbl.text) + 1)

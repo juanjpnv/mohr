@@ -1,16 +1,7 @@
 # -*- coding: utf-8 -*-
 #=========================TELA PRINCIPAL===============================
 <Principal>
-    #Cor de fundo - Background Color
-    canvas.before:
-        Color:
-            rgba: 0,0,0,1
-        Rectangle:
-            # o 'self' abaixo se refere a 'CalculadoraDeMohr'
-            pos: self.pos
-            size: self.size
-    #Fim da cor de fundo
-    TelaInicial:
+    Menu:
         name: 'TelaInicial'
     TelaDoPlano:
         name: 'TelaDoPlano'
@@ -19,13 +10,16 @@
     TelaTensaoTri:
         name: 'TelaTensaoTri'
 #============================ TELA INICIO =============================
-<TelaInicial@Screen>
+<Menu>
     BoxLayout:
         orientation: 'vertical'
         Label:
+            size_hint_y: 0.5
             text: 'Análise de tensão deformação'
         BoxLayout:
             orientation: 'vertical'
+            spacing: '40sp'
+            padding: '40sp'
             Button:
                 on_release: root.manager.current = 'TelaDoPlano'
                 text: 'Estado Plano de Tensão'
@@ -45,27 +39,26 @@
                 ActionPrevious:
                     title: 'Plano de Tens\u00e3o'
                     on_release: root.manager.current = 'TelaInicial'
-                ActionButton:
-                    text: '\ufffd'
-                    font_size: self.height
-        ScrollView:
-            id: rolagem_TelaDoPlano
+        BoxLayout:
+            orientation:'horizontal'
             BoxLayout:
-                orientation:'vertical'
-                size_hint: 1, 1.5
+                size_hint: 0.3, 1
+                orientation: 'vertical'
                 InserirValores
                     id: inserirvalor
                     size_hint: 1, 0.5
+                SistemaSlide:
+                    id: sistemaslide
+                    simbolos: ['θ', 'σx', 'σy', 'τxy']
+                    unidade: ' MPa'
+            BoxLayout:
+                orientation: 'vertical'
                 SaidaValores
                     id: saidavalor
-                BoxLayout:
-                    orientation: 'horizontal'
-                    WidgetGrafico:
-                        id: grafico_tensao_2d
-                    SistemaSlide:
-                        id: sistemaslide
-                        unidade: ' MPa'
-                        size_hint: 0.7, 1
+                    size_hint: 1, .5
+                WidgetGrafico:
+                    id: grafico_tensao_2d
+
 
 # ----------------------------------------------------------------------------------
 # Aqui fica a tela onde o usuário irá inserir os valores de entrada do estado plano
@@ -96,7 +89,6 @@
         text: ''
         multiline: False
         write_tab: False
-
     Button:
         id: botao_calcular
         text: 'Calcular'
@@ -125,60 +117,61 @@
         text: 'Plano de Cisalhamento Máximo'
         size_hint: 1, 2/7
 
-    GridLayout:
-        cols: 2
-        Label:
-            text: u'\u03C31' # sigma 1 | tensao 1
-        Label:
-            id: resultado_x
-            text: '- MPa'
-            halign: 'right'
-        Label:
-            text: u'\u03C32' # sigma 2 | tensao 2
-        Label:
-            id: resultado_y
-            text: '- MPa'
-            halign: 'right'
-        Label:
-            text: u'\u03B81' # theta 1 | angulo 1
-        Label:
-            id: resultado_angulo
-            text: u'- \u00B0' # º
-            halign: 'right'
-        Label:
-            text: u'\u03B82' # theta 2 | angulo 2
-        Label:
-            id: resultado_angulo2
-            text: u'- \u00B0' # º
-            halign: 'right'
+    BoxLayout:
+        GridLayout:
+            cols: 2
+            Label:
+                text: u'\u03C31' # sigma 1 | tensao 1
+            Label:
+                id: resultado_x
+                text: '- MPa'
+                halign: 'right'
+            Label:
+                text: u'\u03C32' # sigma 2 | tensao 2
+            Label:
+                id: resultado_y
+                text: '- MPa'
+                halign: 'right'
+            Label:
+                text: u'\u03B81' # theta 1 | angulo 1
+            Label:
+                id: resultado_angulo
+                text: u'- \u00B0' # º
+                halign: 'right'
+            Label:
+                text: u'\u03B82' # theta 2 | angulo 2
+            Label:
+                id: resultado_angulo2
+                text: u'- \u00B0' # º
+                halign: 'right'
+        Elemento:  # Quadrado que gira (tensao principal)
+            source: 'Imagens/EstadoPlano.png'
+            id: elementoMTP # elementoMTP: Elemento de Maxima Tensao Plana
 
-    GridLayout:
-        cols: 2
-        Label:
-            text: u'\u03C4max'
-        Label:
-            id: resultado_cisalhante
-            text: '- MPa'
-            halign: 'right'
-        Label:
-            text: u'\u03B8s'
-        Label:
-            id: resultado_angulo3
-            text: u'- \u00B0'
-            halign: 'right'
-        Label:
-            text: u'\u03C3med' # sigma med | tensao media
-        Label:
-            id: resultado_med
-            text: '- MPa'
-            halign: 'right'
-
-    Elemento:  # Quadrado que gira (tensao principal)
-        source: 'Imagens/EstadoPlano.png'
-        id: elementoMTP # elementoMTP: Elemento de Maxima Tensao Plana
-    Elemento:  # Quadrado que gira (cisalhamento principal)
-        source: 'Imagens/EstadoPlano.png'
-        id: elementoMCP # elementoMTP: Elemento de Maxima Cisalhamento Plano
+    BoxLayout:
+        GridLayout:
+            cols: 2
+            Label:
+                text: u'\u03C4max'
+            Label:
+                id: resultado_cisalhante
+                text: '- MPa'
+                halign: 'right'
+            Label:
+                text: u'\u03B8s'
+            Label:
+                id: resultado_angulo3
+                text: u'- \u00B0'
+                halign: 'right'
+            Label:
+                text: u'\u03C3med' # sigma med | tensao media
+            Label:
+                id: resultado_med
+                text: '- MPa'
+                halign: 'right'
+        Elemento:  # Quadrado que gira (cisalhamento principal)
+            source: 'Imagens/EstadoPlano.png'
+            id: elementoMCP # elementoMTP: Elemento de Maxima Cisalhamento Plano
 
 #==================== TELA DO PLANO DE DEFORMAÇÃO =====================
 <TelaDoPlanoDeformacao>
@@ -189,23 +182,27 @@
                 ActionPrevious:
                     title: 'Estado Plano de Deformação'
                     on_release: root.manager.current = 'TelaInicial'
-        ScrollView:
+        BoxLayout:
+            orientation: 'horizontal'
+            BoxLayout
+                size_hint: 0.3, 1
+                orientation: 'vertical'
+                EntradaPlanoDeformacao:
+                    id: entrada_plano_deformacao
+                    size_hint: 1, 0.5
+                SistemaSlide:
+                    id: sistemaslide
+                    unidade: ' μm/mm'
+                    simbolos: ['θ', '\u03b5x', '\u03b5y', '\u03b3xy']
+
             BoxLayout:
                 orientation: 'vertical'
-                size_hint: 1, 1.5
-                EntradaPlanoDeformacao:
-                    size_hint: 1, 0.5
-                    id: entrada_plano_deformacao
                 SaidaPlanoDeformacao:
+                    size_hint: 1, 0.5
                     id: saida_plano_deformacao
-                BoxLayout:
-                    orientation: 'horizontal'
-                    WidgetGrafico:
-                        id: grafico_deforma
-                    SistemaSlide:
-                        id: sistemaslide
-                        unidade: ' μm/mm'
-                        size_hint: 0.7, 1
+                WidgetGrafico:
+                    id: grafico_deforma
+
 
 # ----------------------------------------------------------------------------------
 <EntradaPlanoDeformacao>
@@ -262,52 +259,57 @@
         text: 'Distorção principal'
         size_hint: 1, 2/7
 
-    GridLayout:
-        cols: 2
-        Label:
-            text: '\u03b51' # epsilon 1
-        Label:
-            text: '' # resultado epsilon 1
-            id: label_result_e1
-        Label:
-            text: '\u03b11' # alpha 1
-        Label:
-            text: '' # resultado alpha 1
-            id: label_result_alpha1
-        Label:
-            text: '\u03b52' # epsilon 2
-        Label:
-            text: '' # resultado epsilon 2
-            id: label_result_e2
-        Label:
-            text: '\u03b12' # alpha 2
-        Label:
-            text: '' # resultado alpha 2
-            id: label_result_alpha2
-    GridLayout:
-        cols: 2
-        Label:
-            text: '\u03b3max' # gama max
-        Label:
-            text: '' # resultado gama max
-            id: label_result_gamamax
-        Label:
-            text: '\u03b5med' # epsilon med
-        Label:
-            text: '' # resultado epsilon med
-            id: label_result_emed
-        Label:
-            text: '\u03b1\u03b3' # alpha gama
-        Label:
-            text: '' # resultado alpha gama
-            id: label_result_alphagama
+    BoxLayout:
+        orientation: 'horizontal'
+        GridLayout:
+            cols: 2
+            Label:
+                text: '\u03b51' # epsilon 1
+            Label:
+                text: '' # resultado epsilon 1
+                id: label_result_e1
+            Label:
+                text: '\u03b11' # alpha 1
+            Label:
+                text: '' # resultado alpha 1
+                id: label_result_alpha1
+            Label:
+                text: '\u03b52' # epsilon 2
+            Label:
+                text: '' # resultado epsilon 2
+                id: label_result_e2
+            Label:
+                text: '\u03b12' # alpha 2
+            Label:
+                text: '' # resultado alpha 2
+                id: label_result_alpha2
+        Elemento:  # Quadrado que gira (tensao principal)
+            source: 'Imagens/EstadoPlano.png'
+            id: elementoMEP # elementoMEP: Elemento de Maxima Epsilon Plano
 
-    Elemento:  # Quadrado que gira (tensao principal)
-        source: 'Imagens/EstadoPlano.png'
-        id: elementoMEP # elementoMEP: Elemento de Maxima Epsilon Plano
-    Elemento:  # Quadrado que gira (cisalhamento principal)
-        source: 'Imagens/EstadoPlano.png'
-        id: elementoMDP # elementoMDP: Elemento de Maxima Distorçao Plana
+    BoxLayout:
+        orientation: 'horizontal'
+        GridLayout:
+            cols: 2
+            Label:
+                text: '\u03b3max' # gama max
+            Label:
+                text: '' # resultado gama max
+                id: label_result_gamamax
+            Label:
+                text: '\u03b5med' # epsilon med
+            Label:
+                text: '' # resultado epsilon med
+                id: label_result_emed
+            Label:
+                text: '\u03b1\u03b3' # alpha gama
+            Label:
+                text: '' # resultado alpha gama
+                id: label_result_alphagama
+
+        Elemento:  # Quadrado que gira (cisalhamento principal)
+            source: 'Imagens/EstadoPlano.png'
+            id: elementoMDP # elementoMDP: Elemento de Maxima Distorçao Plana
 
 #======================== TELA TENSÃO TRIAXIAL ========================
 <TelaTensaoTri>
@@ -442,23 +444,23 @@
         orientation: 'vertical'
         GridLayout:
             size_hint: 1, 1
-            cols:4
+            cols:2
             Label:
-                text: 'θ'
+                text: root.simbolos[0]
             Label:
                 text: str(root.valor)
             Label:
-                text: 'σx'
+                text: root.simbolos[1]
             Label:
                 id: lbl_sx
                 text: str(root.sx_) + root.unidade
             Label:
-                text: 'σy'
+                text: root.simbolos[2]
             Label:
                 id: lbl_sy
                 text: str(root.sy_) + root.unidade
             Label:
-                text: 'τxy'
+                text: root.simbolos[3]
             Label:
                 id: lbl_txy
                 text: str(root.txy_) + root.unidade

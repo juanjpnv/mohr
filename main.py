@@ -7,7 +7,7 @@ from kivy.app import App
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import NumericProperty, StringProperty
+from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.animation import Animation
 from kivy.uix.image import Image
 from kivy.lang.builder import Builder
@@ -22,24 +22,24 @@ kivy.require('1.10.0')
 """ 
 Simbolos, abreviações e siglas usadas no código
 Considerando: s -> sigma, t -> tau
-    sx: Stress X
-    sy: Stress Y
-    sz: Stress Z
-    s1: Principal Stress 1
-    s2: Principal Stress 2
-    s3: Principal Stress 3
-    smed: Medium Stress
-    txy: Shear XY
-    tyx: Shear YZ
-    tzx: Shear ZX
-    tmax: Maximum Shear
-    t1: Principal Shear 1
-    t2: Principal Shear 2
-    t3: Principal Shear 3
-    r: radius
-    cnt: center
-    tht: theta
-    ang: angle
+    sx: Tensão Normal X
+    sy: Tensão Normal Y
+    sz: Tensão Normal Z
+    s1: Tensão Principal 1
+    s2: Tensão Principal 2
+    s3: Tensão Principal 3
+    smed: Tensão Normal Média
+    txy: Tensão Cisalhante XY
+    tyx: Tensão Cisalhante YZ
+    tzx: Tensão Cisalhante ZX
+    tmax: Tensão Cisalhante Máxima
+    t1: Tensão Cisalhante Principal 1
+    t2: Tensão Cisalhante Principal 2
+    t3: Tensão Cisalhante Principal 3
+    r: raio
+    cnt: centro
+    tht: teta
+    ang: angulo
 """
 
 
@@ -47,6 +47,10 @@ class Principal(ScreenManager):
     """
     Classe esqueleto para uso no arquivo GUImohr.kv
     """
+    pass
+
+
+class Menu(Screen):
     pass
 
 
@@ -60,7 +64,6 @@ class TelaDoPlano(Screen):  # Estado Plano de Tensão
 
 class InserirValores(GridLayout):
     """
-    Classe esqueleto para uso no arquivo GUImohr.kv
     Possui as funções necessárias para receber os dados do usuário e calcular os valores do Estado Plano de Tensão
     """
     def __init__(self, **kwargs):
@@ -86,7 +89,7 @@ class InserirValores(GridLayout):
             self.entrada = [sx, sy, txy]
         except ValueError:  # Se houver algum valor que não seja numerico, essa mensagem de erro é retornada
             self.entrada = ['0', '0', '0']
-            self.grafico = [0, 0, 0, 0, 0]
+            self.grafico = [0, 0, 0, 0, 0, 'tensao']
 
     # Recebe os valores floats e calcula
     def calcular_tensoes(self, sx, sy, txy):
@@ -121,7 +124,7 @@ class InserirValores(GridLayout):
 
         except TypeError or ValueError:
             self.saida = 0, 0, 0, 0, 0, 0, 0
-            self.grafico = [0, 0, 0, 0, 0]
+            self.grafico = [0, 0, 0, 0, 0, 'tensao']
 
     # Executa os processos de calculo ao pressionar o botão
     def calcular(self):
@@ -197,7 +200,7 @@ class EntradaPlanoDeformacao(GridLayout):
 
     def organiza_dados_grafico(self):
         self.grafico = [self.saida[2] / 2, self.saida[3], self.entrada[0], self.entrada[1],
-                        self.entrada[2] / 2]
+                        self.entrada[2] / 2, 'deform']
 
     def calcular(self):
         try:
@@ -207,7 +210,7 @@ class EntradaPlanoDeformacao(GridLayout):
         except ValueError or TypeError:
             self.entrada = [0, 0, 0]
             self.saida = [0, 0, 0, 0, 0, 0, 0]
-            self.grafico = [0, 0, 0, 0, 0]
+            self.grafico = [0, 0, 0, 0, 0, 'deform']
 
     def limpar(self):
         self.ids.input_ex.text = ''
@@ -274,13 +277,13 @@ class InserirTensaoTri(GridLayout):
         cnt3 = round((s2 + s3) / 2)
         r3 = round(t23, 3)
         # Organiza uma lista "grafico" com os valores que serão usados para desenhar o gráfico.
-        self.grafico = [r1, cnt1, r2, cnt2, r3, cnt3]
+        self.grafico = [r1, cnt1, r2, cnt2, r3, cnt3, 'tensao']
 
     def calcular(self):  # Chama todas as funções anteriores.
         self.pega_valor()  # pega os valores digitados pelo usuário e confere se todos são numéricos.
         if 'error' in self.entrada:  # entra aqui caso não sejam todos os valores numéricos
             self.saida = self.entrada  # imprime a mensagem de erro
-            self.grafico = [0, 0, 0, 0, 0, 0]  # envia valores nulos para que não seja desenhado nenhum gráfico
+            self.grafico = [0, 0, 0, 0, 0, 0, 'tensao']  # envia valores nulos para que não seja desenhado nenhum gráfico
         else:  # entra aqui caso não haja nenhum erro com a entrada de dados.
             self.calcular_principal(*self.entrada)  # calcula as tensões principais
             self.organiza_dados_graficos(*self.saida)  # Gera a lista de dados usados pra desenhar o gráfico
@@ -322,6 +325,7 @@ class SistemaSlide(BoxLayout):
     valor = NumericProperty(0)
     sx, sy, txy = 0, 0, 0
     sx_, sy_, txy_ = NumericProperty(0), NumericProperty(0), NumericProperty(0)
+    simbolos = ListProperty(['', '', '', ''])
     unidade = StringProperty('')
 
     def __init__(self, **kwargs):
@@ -371,7 +375,7 @@ class WidgetGrafico(BoxLayout):
             y.append(r*math.sin(tht))
         return x, y
 
-    def grafico_2d(self, r, cnt, sx, sy, txy):
+    def grafico_2d(self, r, cnt, sx, sy, txy, tipo):
         plt.style.use('dark_background')  # tema escuro
 
         x, y = self.pontos_circulo(r, cnt)  # dados de plotagem do circulo
@@ -382,10 +386,16 @@ class WidgetGrafico(BoxLayout):
         grafico.plot([sx, sy], [txy, -txy])
 
         grafico.grid(True, linestyle='--')  # grade
-        grafico.set(xlabel='Tensão Normal', ylabel='Cisalhamento', title='Círculo de Mohr', aspect='equal')  # ajustes
+
+        if tipo == 'tensao':
+            grafico.set(xlabel='Tensão Normal', ylabel='Cisalhamento', title='Círculo de Mohr', aspect='equal')  # ajustes
+        if tipo == 'deform':
+            grafico.set(xlabel='Deformação Normal', ylabel='Deformação por Cisalhamento', title='Círculo de Mohr', aspect='equal')  # ajustes
 
         ylim1, ylim2 = plt.ylim()  # invertendo o eixo do grafico
         plt.ylim(ylim2, ylim1)  # invertendo o eixo do grafico
+
+        plt.tight_layout()  # evita cortes na imagem
 
         self.clear_widgets()
         self.add_widget(FigureCanvasKivyAgg(plt.gcf()))

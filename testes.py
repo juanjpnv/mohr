@@ -1,39 +1,27 @@
-import kivy
+# -*- coding: utf-8 -*-
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.image import Image
-from kivy.properties import NumericProperty
-from kivy.animation import Animation
-
-kivy.require('1.9.1')
+from kivy.uix.screenmanager import Screen, ScreenManager
 
 
-class Principal(BoxLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+class Principal(ScreenManager):
+    pass
 
 
-class SistemaSlide(BoxLayout):
-    valor = NumericProperty(0)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+class TelaDoPlano(Screen):  # Estado Plano de Tensão
+    pass
 
 
-class Plano(Image):
-    angle = NumericProperty(0)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def muda_angulo(self, ang):
-        angulo = ang
-        Animation(center=self.center, angle=angulo).start(self)
+class TelaDoPlanoDeformacao(Screen):  # Estado Plano de Deformação
+    pass
 
 
-class Testes(App):
+class TelaTensaoTri(Screen):
+    pass
+
+
+class Mohr(App):
     def build(self):
         return Principal()
 
 
-Testes().run()
+Mohr().run()
