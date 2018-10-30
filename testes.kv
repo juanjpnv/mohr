@@ -1,8 +1,103 @@
+# -*- coding: utf-8 -*-
+#=========================TELAS PRINCIPAIS===============================
 <Principal>
-    orientation: 'vertical'
+    Menu:
+        name: 'TelaMenu'
+    TelaDoPlano:
+        name: 'TelaDoPlano'
+    TelaDoPlanoDeformacao
+        name: 'TelaDoPlanoDeformacao'
+    TelaTensaoTri:
+        name: 'TelaTensaoTri'
+
+<Menu>
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            size_hint_y: 0.5
+            text: 'Análise de tensão deformação'
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: '40sp'
+            padding: '40sp'
+            Button:
+                on_release: root.manager.current = 'TelaDoPlano'
+                text: 'Estado Plano de Tensão'
+            Button:
+                text: 'Estado Plano de Deformação'
+                on_release: root.manager.current = 'TelaDoPlanoDeformacao'
+            Button:
+                text: 'Estado Triaxial de Tensão'
+                on_release: root.manager.current = 'TelaTensaoTri'
+
+<TelaDoPlano>
+    BoxLayout:
+        orientation: 'vertical'
+        ActionBar:
+            ActionView:
+                ActionPrevious:
+                    title: 'Plano de Tensão'
+                    on_release: root.manager.current = 'TelaMenu'
+        BoxLayout:
+            orientation:'horizontal'
+            BoxLayout:
+                size_hint: 0.3, 1
+                orientation: 'vertical'
+                InserirValores
+                    id: inserirvalor
+                    size_hint: 1, 0.5
+                SistemaSlide:
+                    id: sistemaslide
+            BoxLayout:
+                orientation: 'vertical'
+                SaidaValores
+                    id: saidavalor
+                    size_hint: 1, .5
+                WidgetGrafico:
+                    id: grafico
+
+<TelaDoPlanoDeformacao>
+
+<TelaTensaoTri>
+
+#==================== MÓDULOS TELAS PLANAS =====================
+<InserirValores>
+    cols: 2
     Label:
-        id: lbl
-        text: '1'
+        text:
+    TextInput:
+        id: entra_X
+        text: ''
+        multiline: False
+        write_tab: False
+    Label:
+        text:
+    TextInput:
+        id: entra_Y
+        text: ''
+        multiline: False
+        write_tab: False
+    Label:
+        text:
+    TextInput:
+        id: entra_cis
+        text: ''
+        multiline: False
+        write_tab: False
     Button:
-        text: 'Pressione'
-        on_press: root.ids.lbl.text = str(int(root.ids.lbl.text) + 1)
+        id: botao_calcular
+        text: 'Calcular'
+    Button:
+        id: botao_limpar
+        text: 'Limpar'
+
+<SaidaValores>
+
+<Elemento>
+
+<SistemaSlide>
+
+#======================== MÓDULOS TENSÃO TRIAXIAL ========================
+<InserirTensaoTri>
+
+<SaidaTensaoTri>

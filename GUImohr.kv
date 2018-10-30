@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-#=========================TELA PRINCIPAL===============================
+#=========================TELAS PRINCIPAIS===============================
 <Principal>
     Menu:
-        name: 'TelaInicial'
+        name: 'TelaMenu'
     TelaDoPlano:
         name: 'TelaDoPlano'
     TelaDoPlanoDeformacao
         name: 'TelaDoPlanoDeformacao'
     TelaTensaoTri:
         name: 'TelaTensaoTri'
-#============================ TELA INICIO =============================
+
 <Menu>
     BoxLayout:
         orientation: 'vertical'
@@ -30,7 +30,6 @@
                 text: 'Estado Triaxial de Tensão'
                 on_release: root.manager.current = 'TelaTensaoTri'
 
-#=========================== TELA DO PLANO ============================
 <TelaDoPlano>
     BoxLayout:
         orientation: 'vertical'
@@ -38,7 +37,7 @@
             ActionView:
                 ActionPrevious:
                     title: 'Plano de Tensão'
-                    on_release: root.manager.current = 'TelaInicial'
+                    on_release: root.manager.current = 'TelaMenu'
         BoxLayout:
             orientation:'horizontal'
             BoxLayout:
@@ -47,25 +46,24 @@
                 InserirValores
                     unidade: ' MPa'
                     tipo: 'tensao'
-                    simbolos: ['σx', 'σy', 'τxy']
+                    simbolos: ['\u03c3x', '\u03c3y', '\u03c4xy']
                     id: inserirvalor
                     size_hint: 1, 0.5
                 SistemaSlide:
                     id: sistemaslide
-                    simbolos: ['θ', 'σx', 'σy', 'τxy']
+                    simbolos: ['\u03b8', '\u03c3x', '\u03c3y', '\u03c4xy']
                     unidade: ' MPa'
             BoxLayout:
                 orientation: 'vertical'
                 SaidaValores
                     unidade: ' MPa'
-                    simbolos: ['σ1', 'σ2', 'τmax', 'σmed']
+                    simbolos: ['\u03c31', '\u03c32', '\u03c4max', '\u03c3med']
                     id: saidavalor
                     size_hint: 1, .5
                 WidgetGrafico:
                     tipo: 'tensao'
                     id: grafico
 
-#==================== TELA DO PLANO DE DEFORMAÇÃO =====================
 <TelaDoPlanoDeformacao>
     BoxLayout:
         orientation: 'vertical'
@@ -73,7 +71,7 @@
             ActionView:
                 ActionPrevious:
                     title: 'Estado Plano de Deformação'
-                    on_release: root.manager.current = 'TelaInicial'
+                    on_release: root.manager.current = 'TelaMenu'
         BoxLayout:
             orientation:'horizontal'
             BoxLayout:
@@ -81,32 +79,53 @@
                 orientation: 'vertical'
                 InserirValores
                     tipo: 'deform'
-                    unidade: ' μm/mm'
-                    simbolos: ['εx', 'εy', 'γxy']
+                    unidade: ' \u03BCm/mm'
+                    simbolos: ['\u03B5x', '\u03B5y', '\u03B3xy']
                     id: inserirvalor
                     size_hint: 1, 0.5
                 SistemaSlide:
                     id: sistemaslide
-                    unidade: ' μm/mm'
-                    simbolos: ['θ', 'εx', 'εy', 'γxy']
+                    unidade: ' \u03BCm/mm'
+                    simbolos: ['\u03b8', '\u03B5x', '\u03B5y', '\u03B3xy']
             BoxLayout:
                 orientation: 'vertical'
                 SaidaValores:
                     tipo: 'deform'
-                    unidade: ' μm/mm'
-                    simbolos: ['ε1', 'ε2', 'γmax', 'εmed']
+                    unidade: ' \u03BCm/mm'
+                    simbolos: ['\u03B51', '\u03B52', '\u03B3max', '\u03B5med']
                     size_hint: 1, 0.5
                     id: saidavalor
                 WidgetGrafico:
                     tipo: 'deform'
                     id: grafico
 
-#==================== MÓDULOS DAS TELAS =====================
+<TelaTensaoTri>
+    BoxLayout:
+        orientation: 'vertical'
+        ActionBar:
+            ActionView:
+                ActionPrevious:
+                    title: 'Estado Triaxial de Tensão'
+                    on_release: root.manager.current = 'TelaMenu'
+        BoxLayout:
+            size_hint: 1, .3
+            orientation: 'horizontal'
+            Label:
+                size_hint: .1,1
+                text: '\u03c3 = '
+            InserirTensaoTri:
+                id: entra__tri
+            SaidaTensaoTri:
+                id: saida_tensao_tri
+        WidgetGrafico:
+            id: grafico_tensao_3D
+            tipo: 'tensao'
+
+#==================== MÓDULOS TelaDoPlano =====================
 <InserirValores>
     pai: root.parent.parent.parent.parent.ids
     cols: 2
     Label:
-        id: label_tensaoX
         text: root.simbolos[0]
     TextInput:
         id: entra_X
@@ -114,7 +133,6 @@
         multiline: False
         write_tab: False
     Label:
-        id: label_tensaoY
         text: root.simbolos[1]
     TextInput:
         id: entra_Y
@@ -122,7 +140,6 @@
         multiline: False
         write_tab: False
     Label:
-        id: label_cisalhante
         text: root.simbolos[2]
     TextInput:
         id: entra_cis
@@ -134,13 +151,31 @@
         text: 'Calcular'
         on_press: root.calcular()
         on_release: root.pai.saidavalor.executa_saida_valores(*root.saida)
-        on_release: root.pai.grafico.grafico_2d(*root.grafico); root.pai.sistemaslide.pegar_valores(*root.entrada)
+        on_release: root.pai.grafico.grafico_2d(*root.grafico)
+        on_release: root.pai.sistemaslide.pegar_valores(*root.entrada)
     Button:
         id: botao_limpar
         text: 'Limpar'
         on_press: root.limpar()
         on_release: root.pai.saidavalor.executa_saida_valores(*root.saida)
-        on_release: root.pai.grafico.grafico_2d(*root.grafico); root.pai.sistemaslide.limpar()
+        on_release: root.pai.grafico.grafico_2d(*root.grafico)
+        on_release: root.pai.sistemaslide.limpar()
+
+<Elemento>
+    source: 'Imagens/EstadoPlano.png'
+    canvas.before:
+        PushMatrix
+        Rotate:
+            angle: root.angle
+            origin: self.center
+    canvas.after:
+        PopMatrix
+        Color:
+            rgba: 1,1,1,1
+        Line: # desenha linha de referência
+            bezier: (*self.center, self.center_x+root.tamanho, self.center_y)
+        Line:  # desenha o arco de angulo
+            circle: (*self.center, 0.5*root.tamanho, 90, -root.angle+90)
 
 <SaidaValores>
     cols: 2
@@ -166,19 +201,18 @@
                 text: '- '+root.unidade
                 halign: 'right'
             Label:
-                text: 'θ1' # theta 1 | angulo 1
+                text: '\u03b81' # theta 1 | angulo 1
             Label:
                 id: result_ang
-                text: '- º' # º
+                text: '- \u00ba' 
                 halign: 'right'
             Label:
-                text: 'θ2' # theta 2 | angulo 2
+                text: '\u03b82' # theta 2 | angulo 2
             Label:
                 id: result_ang2
-                text: '- º' # º
+                text: '- \u00ba' 
                 halign: 'right'
         Elemento:
-            source: 'Imagens/EstadoPlano.png'
             id: elemento1 # Maxima Tensao/Deformação Normal
 
     BoxLayout:
@@ -197,137 +231,13 @@
                 text: '- '+root.unidade
                 halign: 'right'
             Label:
-                text: 'θs'
+                text: '\u03b8s'
             Label:
                 id: result_ang3
-                text: '- º'
+                text: '- \u00ba'
                 halign: 'right'
         Elemento:
-            source: 'Imagens/EstadoPlano.png'
             id: elemento2 # Máxima Tensão/Deformação Cisalhante
-
-#======================== TELA TENSÃO TRIAXIAL ========================
-<TelaTensaoTri>
-    BoxLayout:
-        orientation: 'vertical'
-        ActionBar:
-            ActionView:
-                ActionPrevious:
-                    title: 'Estado Triaxial de Tensão'
-                    on_release: root.manager.current = 'TelaInicial'
-        BoxLayout:
-            size_hint: 1, .3
-            orientation: 'horizontal'
-            Label:
-                size_hint: .1,1
-                text: 'σ = '
-            InserirTensaoTri:
-                id: entra__tri
-            SaidaTensaoTri:
-                id: saida_tensao_tri
-        WidgetGrafico:
-            id: grafico_tensao_3D
-            tipo: 'tensao'
-
-#------------------------------------------------------------------------------------
-<InserirTensaoTri>
-        #sx: Stress X - sy: Stress Y - sz: Stress Z
-        #txy: Shear XY - tyx: Shear YZ - tzx: Shear ZX"""
-    cols: 3
-    TextInput:
-        text: 'σxx'
-        multiline: False
-        id: entra_X
-        write_tab: False
-    TextInput:
-        text: 'τxy'
-        multiline: False
-        id: entra_cisXY
-        write_tab: False
-    TextInput:
-        text: 'τxz'
-        multiline: False
-        id: entra_cisXZ
-        write_tab: False
-
-    Label:
-        text: root.ids.entra_cisXY.text
-    TextInput:
-        text: 'σyy'
-        multiline: False
-        write_tab: False
-        id: entra_Y
-    TextInput:
-        text: 'τyz'
-        multiline: False
-        write_tab: False
-        id: entra_cisYZ
-
-    Label:
-        text: root.ids.entra_cisXZ.text
-    Label:
-        text: root.ids.entra_cisYZ.text
-    TextInput:
-        text: 'σzz'
-        multiline: False
-        write_tab: False
-        id: entra_Z
-    Button:
-        text: 'Calcular'
-        on_press: root.calcular()
-        on_release: app.root.get_screen('TelaTensaoTri').ids.saida_tensao_tri.imprime_principais(*root.saida)
-        on_release: app.root.get_screen('TelaTensaoTri').ids.grafico_tensao_3D.grafico_3d(*root.grafico)
-    Button:
-        text: 'Limpar'
-        on_release: root.limpar()
-        on_release: app.root.get_screen('TelaTensaoTri').ids.grafico_tensao_3D.grafico_3d(0,0,0,0,0,0)
-        on_press: app.root.get_screen('TelaTensaoTri').ids.saida_tensao_tri.imprime_principais('0','0','0','0','0','0')
-
-#------------------------------------------------------------------------------------
-<SaidaTensaoTri>
-    cols: 1
-    BoxLayout:
-        id: caixa_resposta_triaxial
-        orientation: 'horizontal'
-        BoxLayout:
-            orientation: 'vertical'
-            Label:
-                text: 'σ1'
-                id: label_result_s1
-            Label:
-                text: 'σ2'
-                id: label_result_s2
-            Label:
-                text: 'σ3'
-                id: label_result_s3
-        BoxLayout:
-            orientation: 'vertical'
-            Label:
-                text: 'τ13'
-                id: label_result_t13
-            Label:
-                text: 'τ12'
-                id: label_result_t12
-            Label:
-                text: 'τ23'
-                id: label_result_t23
-
-#=========================== OUTROS WIDGETS============================
-<Elemento@Plano>
-    #imagem do Plano De Saida -> imagem_pds
-    canvas.before:
-        PushMatrix
-        Rotate:
-            angle: root.angle
-            origin: self.center
-    canvas.after:
-        PopMatrix
-        Color:
-            rgba: 1,1,1,1
-        Line:
-            bezier: (*self.center, self.center_x+0.3*self.height, self.center_y)
-        Line:
-            circle: (*self.center, 0.1*root.height, 90, -root.angle+90) #desenha angulo principal 1.
 
 <SistemaSlide>
     orientation: 'vertical'
@@ -356,7 +266,6 @@
                 id: lbl_txy
                 text: str(root.txy_) + root.unidade
         Elemento:
-            source: 'Imagens/EstadoPlano.png'
             id: plano
             angle: root.valor
     Slider:
@@ -364,4 +273,93 @@
         id: desliza
         min: 0
         max: 180
-        on_value: root.valor = round(self.value, 3); root.rotacao_plano()
+        on_value: root.valor = round(self.value, 3); root.calculo_plano()
+
+#======================== MÓDULOS TENSÃO TRIAXIAL ========================
+<InserirTensaoTri>
+        #sx: Stress X - sy: Stress Y - sz: Stress Z
+        #txy: Shear XY - tyx: Shear YZ - tzx: Shear ZX"""
+    cols: 3
+    pai: root.parent.parent.parent.ids
+    TextInput:
+        text: '\u03c3xx'
+        multiline: False
+        id: entra_X
+        write_tab: False
+    TextInput:
+        text: '\u03c4xy'
+        multiline: False
+        id: entra_cisXY
+        write_tab: False
+    TextInput:
+        text: '\u03c4xz'
+        multiline: False
+        id: entra_cisXZ
+        write_tab: False
+
+    Label:
+        text: root.ids.entra_cisXY.text
+    TextInput:
+        text: '\u03c3yy'
+        multiline: False
+        write_tab: False
+        id: entra_Y
+    TextInput:
+        text: '\u03c4yz'
+        multiline: False
+        write_tab: False
+        id: entra_cisYZ
+
+    Label:
+        text: root.ids.entra_cisXZ.text
+    Label:
+        text: root.ids.entra_cisYZ.text
+    TextInput:
+        text: '\u03c3zz'
+        multiline: False
+        write_tab: False
+        id: entra_Z
+    Button:
+        text: 'Calcular'
+        on_press: root.calcular()
+        on_release: root.pai.saida_tensao_tri.imprime_principais(*root.saida)
+        on_release: root.pai.grafico_tensao_3D.grafico_3d(*root.grafico)
+    Button:
+        text: 'Limpar'
+        on_press: root.limpar()
+        on_release: root.pai.grafico_tensao_3D.grafico_3d(*root.grafico)
+        on_release: root.pai.saida_tensao_tri.imprime_principais(*root.saida)
+
+<SaidaTensaoTri>
+    cols: 4
+    Label:
+        text: '\u03c31'
+    Label:
+        id: label_result_s1
+    Label:
+        text: '\u03c413'
+    Label:
+        text: ''
+        id: label_result_t13
+
+    Label:
+        text: '\u03c32'
+    Label:
+        text: ''
+        id: label_result_s2
+    Label:
+        text: '\u03c412'
+    Label:
+        text: ''
+        id: label_result_t12
+
+    Label:
+        text: '\u03c33'
+    Label:
+        text: ''
+        id: label_result_s3
+    Label:
+        text: '\u03c423'
+    Label:
+        text: ''
+        id: label_result_t23
